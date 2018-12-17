@@ -47,6 +47,14 @@ export default new Router({
             title: 'user',
           },
         },
+        {
+          path: 'role',
+          name: 'role',
+          component: () => import('./views/sys/role.vue'),
+          meta: {
+            title: 'role',
+          },
+        },
       ],
     },
   ],

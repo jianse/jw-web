@@ -15,7 +15,8 @@
             <div>
 
                 <ul style="list-style: none;padding: 0">
-                    <li>
+
+                    <li style="margin-top:10px;margin-bottom:20px">
                         <el-button type="primary" icon="el-icon-plus" @click="newModal=true">新建</el-button>
                         <el-button type="success" icon="el-icon-edit">修改</el-button>
                         <el-button type="danger" icon="el-icon-delete">删除</el-button>
@@ -211,6 +212,7 @@
             }
         }
     }
+    
 </script>
 
 <style scoped>
