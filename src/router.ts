@@ -95,6 +95,22 @@ export default new Router({
             title: 'choose',
           },
         },
+        {
+          path: 'info',
+          name: 'info',
+          component: () => import('./views/student/info.vue'),
+          meta: {
+            title: 'info',
+          },
+        },
+        {
+          path: 'update',
+          name: 'update',
+          component: () => import('./views/student/update.vue'),
+          meta: {
+            title: 'update',
+          },
+        },
       ],
     },
   ],
