@@ -63,6 +63,14 @@ export default new Router({
             title: 'menu',
           },
         },
+        {
+          path: 'course',
+          name: 'course',
+          component: () => import('./views/course/course.vue'),
+          meta: {
+            title: 'course',
+          },
+        },
       ],
     },
   ],
