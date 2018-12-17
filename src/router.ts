@@ -71,6 +71,30 @@ export default new Router({
             title: 'course',
           },
         },
+        {
+          path: 'plan',
+          name: 'plan',
+          component: () => import('./views/course/plan.vue'),
+          meta: {
+            title: 'plan',
+          },
+        },
+        {
+          path: 'sch',
+          name: 'sch',
+          component: () => import('./views/course/sch.vue'),
+          meta: {
+            title: 'sch',
+          },
+        },
+        {
+          path: 'choose',
+          name: 'choose',
+          component: () => import('./views/course/choose.vue'),
+          meta: {
+            title: 'choose',
+          },
+        },
       ],
     },
   ],
