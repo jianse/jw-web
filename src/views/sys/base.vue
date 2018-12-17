@@ -102,7 +102,7 @@
                 method:'get'
             }).then((response)=>{
                 this.menuList=response.data.data;
-                console.log(response.data.data);
+                // console.log(response.data.data);
                 for(let i in this.menuList){
                     for(let j in this.menuList[i].children){
                         this.menuSub.push(this.menuList[i].children[j]);

@@ -55,6 +55,14 @@ export default new Router({
             title: 'role',
           },
         },
+        {
+          path: 'menu',
+          name: 'meun',
+          component: () => import('./views/sys/menu.vue'),
+          meta: {
+            title: 'menu',
+          },
+        },
       ],
     },
   ],
