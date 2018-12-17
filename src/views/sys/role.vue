@@ -45,10 +45,10 @@
                                                     </el-table-column>
                                                     <el-table-column prop="name" label="操作" width="180">
                                                         <el-switch
-  v-model="value2"
-  active-color="#13ce66"
-  inactive-color="#ff4949">
-</el-switch>
+                                                          v-model="value2"
+                                                          active-color="#13ce66"
+                                                          inactive-color="#ff4949">
+                                                        </el-switch>
                                                     </el-table-column>
                                             
                                                 </el-table>
@@ -116,21 +116,18 @@
                 multipleSelection: [],
                 dialogVisible: false,
                 
-                
-
             };
 
         },
         methods: {
             handleClose(done) {
                 this.$confirm('确认关闭？')
-                    .then(_ => {
+                    .then(() => {
                         done();
                     })
-                    .catch(_ => {});
+                    .catch(() => {});
             }
         }
-    }
 </script>
 
 <style scoped>
