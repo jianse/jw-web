@@ -51,6 +51,7 @@
                                         <el-tooltip class="item" effect="dark" content="重置密码" placement="top">
                                             <el-button size="mini"
                                                        type="warning"
+                                                       @click="resetPass(scope.$index,tableData)"
                                                        circle>
                                                 <i class="fas fa-keyboard"></i>
                                             </el-button>
@@ -86,8 +87,7 @@
                 <el-dialog title="添加用户"
                            width="26%"
                            :visible.sync="newDialogVisible"
-                           @open="onNewDialogOpen()"
-                           @close="onNewDialogClose()"
+                           @opened="onNewDialogOpened()"
                            v-if="newDialogVisible">
                     <div style="margin: 0 10px 0 0">
                         <el-form ref="newUserForm"
@@ -124,8 +124,8 @@
 
                     </div>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="newDialogCancel()">取 消</el-button>
-                        <el-button type="primary" @click="newDialogOk()">确 定</el-button>
+                        <el-button @click="newDialogCancel">取 消</el-button>
+                        <el-button type="primary" :disabled="newDialogOkButtonDisable" @click="newDialogOk">确 定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -158,8 +158,8 @@
 
                             </el-input>
                         </el-form-item>
-                        <el-form-item label="电话" prop="tel">
-                            <el-input v-model="modifyUserForm.tel" auto-complete="off">
+                        <el-form-item label="电话" prop="moble">
+                            <el-input v-model="modifyUserForm.moble" auto-complete="off">
 
                             </el-input>
                         </el-form-item>
@@ -221,6 +221,7 @@
                 groupId:null,
                 /*新建modal的显示参数*/
                 newDialogVisible:false,
+                newDialogOkButtonDisable:false,
                 /*修改modal的显示参数*/
                 modifyDialogVisible:false,
                 modifyButtonDisable :true,
@@ -442,18 +443,14 @@
                 this.user.email = data.email;
                 this.user.moble = data.tel;
             },
-            onNewDialogOpen(){
-                this.$refs['newUserForm'].resetFields();
-            },
-            onNewDialogClose(){
+            onNewDialogOpened(){
                 this.$refs['newUserForm'].resetFields();
             },
             newDialogOk(){
+                this.newDialogOkButtonDisable = true;
                 this.$refs['newUserForm'].validate((valid) =>{
-                    //console.log(this.newUserForm);
                     if(valid){
                         this.initUser(this.newUserForm);
-                        //console.log(this.user);
                         this.axios({
                             url:'/user',
                             method:'post',
@@ -467,6 +464,9 @@
                                     position: 'bottom-right',
                                 });
                                 this.newDialogVisible = false;
+                                this.newDialogOkButtonDisable = false;
+                                this.refreshTable();
+                                this.$refs['newUserForm'].resetFields();
                             }else {
                                 this.$notify({
                                     title:'添加失败！',
@@ -474,21 +474,20 @@
                                     type:'warning',
                                     position: 'bottom-right',
                                 });
+                                this.newDialogOkButtonDisable = false;
                             }
                         }).catch((error)=>{
-                            //console.log(error);
                             this.$notify({
                                 title:'错误！',
                                 message:'新建用户发生错误，请向管理员报告此错误。',
                                 type:'error',
                                 position: 'bottom-right',
-                            })
+                            });
+                            this.newDialogOkButtonDisable = false;
                         });
-
                     }
-
                 });
-                this.$refs['newUserForm'].resetFields();
+                this.newDialogOkButtonDisable = false;
             },
             newDialogCancel(){
                 this.$refs['newUserForm'].resetFields();
@@ -504,8 +503,84 @@
             modifyButtonClick(){
                 this.modifyDialogVisible=true;
 
-            },modifyOk(){
-
+            },
+            modifyOk(){
+                console.log(this.modifyUserForm);
+                this.axios({
+                    url:'/user/'+this.modifyUserForm.id,
+                    method:'put',
+                    data:this.modifyUserForm
+                }).then((response)=>{
+                    if(response.data.status==100){
+                        this.$notify({
+                            title:'修改成功！',
+                            message:'修改用户信息成功',
+                            type:'success',
+                            position: 'bottom-right',
+                        })
+                    }else{
+                        this.$notify({
+                            title:'修改失败！',
+                            message:response.data.message,
+                            type:'warning',
+                            position: 'bottom-right',
+                        })
+                    }
+                }).catch((error)=>{
+                    this.$notify({
+                        title:'错误！',
+                        message:'服务器遇到内部错误，请联系管理员解决。',
+                        type:'error',
+                        position: 'bottom-right',
+                    })
+                });
+                this.modifyDialogVisible =false;
+            },
+            resetPass(index,tableData){
+                console.log(index);
+                console.log(tableData);
+                this.$prompt('请输入密码', '重置密码', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputType:'password',
+                    inputPattern:/[\w!#$%&'*+/=?^_`{|}~-]+/,
+                    inputErrorMessage: '密码不正确'
+                }).then(({ value }) => {
+                    if(value!=null&&value!=''){
+                        this.axios({
+                            url:'/user/'+tableData[index].id,
+                            method:'put',
+                            data: {
+                                password:value,
+                            }
+                        }).then((res)=>{
+                            if(res.data.status==100){
+                                this.$notify({
+                                    title:'重置成功！',
+                                    message:'重置用户密码成功！',
+                                    type:'success',
+                                    position: 'bottom-right',
+                                });
+                            }else {
+                                this.$notify({
+                                    title:'重置失败！',
+                                    message:'重置用户密码失败！',
+                                    type:'warning',
+                                    position: 'bottom-right',
+                                });
+                            }
+                        }).catch(()=>{
+                            this.$notify({
+                                title:'错误！',
+                                message:'服务器遇到内部错误，请通知管理员解决！',
+                                type:'error',
+                                position: 'bottom-right',
+                            });
+                        });
+                    }
+                }).catch(() => {
+                    console.log('cancel');
+                });
             }
 
         }
