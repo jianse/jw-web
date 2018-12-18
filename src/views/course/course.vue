@@ -14,7 +14,7 @@
                         <i class="el-icon-plus"></i>
                         新建
                     </el-button>
-                    <el-button type="primary" @click="newModal=true">
+                    <el-button type="primary" :disabled="deleteButtonDisable" @click="onDeleteClick">
                         <i class="el-icon-delete"></i>
                         删除
                     </el-button>
@@ -74,7 +74,7 @@
                                                 size="mini"
                                                 type="danger"
                                                 icon="el-icon-delete"
-                                                @click="onDeleteClick(scope.$index,courseTableData)"
+                                                @click="onInlineDeleteClick(scope.$index,courseTableData)"
                                                 circle>
                                         </el-button>
                                     </el-tooltip>
@@ -96,6 +96,41 @@
 
             </ul>
         </div>
+        <div>
+            <el-dialog title="添加课程"
+                       width="26%"
+                       :visible.sync="newDialogVisible"
+                       v-if="newDialogVisible">
+                <el-form ref="newCourseForm"
+                         label-width="20%"
+                         status-icon
+                         :model="newCourseForm"
+                         :rules="newCourseRoles">
+                    <el-form-item lable="课程名" prop="">
+                        <el-input></el-input>
+                    </el-form-item>
+
+                    <el-form-item lable="学分">
+                        <el-input>
+
+                        </el-input>
+                    </el-form-item>
+
+                    <el-form-item lable="学时">
+                        <el-input>
+                            <el-option v-for="">
+
+                            </el-option>
+                        </el-input>
+                    </el-form-item>
+
+                    <el-form-item lable="课程性质">
+                        <el-select></el-select>
+                    </el-form-item>
+
+                </el-form>
+            </el-dialog>
+        </div>
     </div>
 
 
@@ -106,6 +141,7 @@
 
         data() {
             return {
+                deleteButtonDisable:true,
                 searchKeyword:'',
                 total:10,
                 pageInfo:{
@@ -128,6 +164,8 @@
                     }
                 },],
                 multipleSelection: [],
+                selected:[],
+                newDialogVisible:false,
             };
         },
         mounted(){
@@ -149,15 +187,21 @@
                 this.fetchCourseData();
             },
             handleSelectionChange(selection){
-
+                this.selected=selection;
+                if(selection.length>0){
+                    this.deleteButtonDisable = false;
+                }else {
+                    this.deleteButtonDisable = true;
+                }
             },
             onEditClick(){
 
             },
-            onDeleteClick(index,tableData){
+            onInlineDeleteClick(index, tableData){
                 console.log(tableData);
                 console.log(index);
                 this.deleteConfirmed([tableData[index].course.id]);
+                this.fetchCourseData();
             },
             deleteConfirmed(ids) {
                 this.$confirm('此操作将永久删除课程，是否继续?','警告',{
@@ -202,7 +246,16 @@
                         position: 'bottom-right',
                     });
                 });
+            },
+            onDeleteClick(){
+                let ids=[];
+                for(let i in this.selected){
+                    ids.push(this.selected[i].course.id);
+                }
+                this.deleteConfirmed(ids);
+                this.fetchCourseData();
             }
+
 
         }
     }
