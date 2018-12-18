@@ -10,7 +10,7 @@
                         <i class="el-icon-search"></i>
                         <span>查找</span>
                     </el-button>
-                    <el-button type="primary" @click="newModal=true">
+                    <el-button type="primary" @click="newDialogVisible=true">
                         <i class="el-icon-plus"></i>
                         新建
                     </el-button>
@@ -70,12 +70,11 @@
                                         </el-button>
                                     </el-tooltip>
                                     <el-tooltip class="item" effect="dark" content="删除" placement="top">
-                                        <el-button
-                                                size="mini"
-                                                type="danger"
-                                                icon="el-icon-delete"
-                                                @click="onInlineDeleteClick(scope.$index,courseTableData)"
-                                                circle>
+                                        <el-button size="mini"
+                                                   type="danger"
+                                                   icon="el-icon-delete"
+                                                   @click="onInlineDeleteClick(scope.$index,courseTableData)"
+                                                   circle>
                                         </el-button>
                                     </el-tooltip>
                                 </template>
@@ -100,35 +99,57 @@
             <el-dialog title="添加课程"
                        width="26%"
                        :visible.sync="newDialogVisible"
+                       @open="dialogOpenCallback"
                        v-if="newDialogVisible">
-                <el-form ref="newCourseForm"
-                         label-width="20%"
-                         status-icon
-                         :model="newCourseForm"
-                         :rules="newCourseRoles">
-                    <el-form-item lable="课程名" prop="">
-                        <el-input></el-input>
-                    </el-form-item>
+                <div>
+                    <el-form ref="newCourseForm"
+                             label-width="20%"
+                             status-icon
+                             :model="newCourseFormData"
+                             :rules="newCourseFormRoles" style="margin:0 ;padding-bottom: 0">
+                        <el-form-item label="课程名" prop="name">
+                            <el-input v-model="newCourseFormData.name" type="text" >
 
-                    <el-form-item lable="学分">
-                        <el-input>
+                            </el-input>
+                        </el-form-item>
 
-                        </el-input>
-                    </el-form-item>
+                        <el-form-item label="学分" prop="point">
+                            <el-input-number v-model="newCourseFormData.point"
+                                             :step="0.5"
+                                             :precision="1"
+                                             :max="8"
+                                             :min="1" @change="pointChange" style="width:100%">
 
-                    <el-form-item lable="学时">
-                        <el-input>
-                            <el-option v-for="">
+                            </el-input-number>
+                        </el-form-item>
 
-                            </el-option>
-                        </el-input>
-                    </el-form-item>
+                        <el-form-item label="学时" prop="hour">
+                            <el-input type="text" v-model="newCourseFormData.hour">
 
-                    <el-form-item lable="课程性质">
-                        <el-select></el-select>
-                    </el-form-item>
+                            </el-input>
+                        </el-form-item>
 
-                </el-form>
+                        <el-form-item label="课程性质" prop="couId">
+                            <el-select v-model="newCourseFormData.couId"
+                                       placeholder="请选择"
+                                       @change="newCourseFormSelectChange"
+                                       style="width: 100%">
+                                <el-option v-for="item in courseNatures" :value="item.id" :key="item.id" :label="item.name">
+
+                                </el-option>
+                            </el-select>
+                            <el-checkbox disabled label="必修" v-model="newCourserequired">
+
+                            </el-checkbox>
+                        </el-form-item>
+
+                    </el-form>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button >取 消</el-button>
+                    <el-button type="primary" @click="onNewCourseDialogOk" >确 定</el-button>
+                </div>
+
             </el-dialog>
         </div>
     </div>
@@ -163,22 +184,62 @@
                         required: true
                     }
                 },],
-                multipleSelection: [],
                 selected:[],
                 newDialogVisible:false,
+                newCourseFormData:{
+                    name:'',
+                    couId:null,
+                    point:null,
+                    hour:null,
+                },
+                newCourseFormRoles:{
+                    name:[
+                        {required:true,message:'请输入课程名',trigger :'blur'},
+                    ],
+                    couId:[
+                        {required:true,message:'请选择课程性质',trigger :'blur',type: 'number'}
+                    ],
+                    point:[
+                        {required:true,message:'请输入学分',trigger :'blur'}
+                    ],
+                    hour:[
+                        {required:true,message:'请输入学时',trigger:'blur'}
+                    ],
+                },
+                courseNatures:[
+                    {
+                        id: 1,
+                        name: "专业必修课",
+                        description: ".",
+                        required: true
+                    }
+                ],
+                newCourseDialogSelectData:null,
+                newCourserequired:false,
             };
         },
         mounted(){
             this.fetchCourseData();
+            this.fetchAllCourseNature();
         },
         methods:{
+            fetchAllCourseNature() {
+                this.axios({
+                    url: '/course/nature',
+                    method: 'get'
+                }).then((res) => {
+                    this.courseNatures = res.data.data;
+
+                }).catch((error) => {
+                    console.log(error);
+                })
+            },
             fetchCourseData(){
                 this.axios({
                     url:'/course/page',
                     method:'get',
                     data:this.pageInfo
                 }).then((res)=>{
-                    console.log(res.data.data);
                     this.courseTableData=res.data.data.list;
                     this.total = res.data.data.total;
                 })
@@ -198,8 +259,7 @@
 
             },
             onInlineDeleteClick(index, tableData){
-                console.log(tableData);
-                console.log(index);
+
                 this.deleteConfirmed([tableData[index].course.id]);
                 this.fetchCourseData();
             },
@@ -254,9 +314,60 @@
                 }
                 this.deleteConfirmed(ids);
                 this.fetchCourseData();
+            },
+            onNewCourseDialogOk(){
+                this.$refs['newCourseForm'].validate((valid)=>{
+                    if(valid){
+                        this.axios({
+                            url:'',
+                            method:'post',
+                            data:this.newCourseFormData,
+                        }).then((res)=>{
+                            if(res.data.status==100){
+                                this.$notify({
+                                    title:'添加成功！',
+                                    message:'添加课程成功',
+                                    type:'success',
+                                    position: 'bottom-right',
+                                });
+                                this.newDialogVisible=false;
+                                this.fetchCourseData();
+                                this.$refs['newCourseForm'].resetFields();
+                            }else {
+                                this.$notify({
+                                    title:'添加失败！',
+                                    message:response.data.message,
+                                    type:'warning',
+                                    position: 'bottom-right',
+                                });
+                                this.newDialogVisible=false;
+                            }
+                        }).catch((error)=>{
+                            this.$notify({
+                                title:'错误！',
+                                message:'新建课程发生错误，请向管理员报告此错误。',
+                                type:'error',
+                                position: 'bottom-right',
+                            });
+                        })
+                    }
+                })
+            },
+            dialogOpenCallback(){
+                this.fetchAllCourseNature();
+            },
+            newCourseFormSelectChange(e){
+                let c =this.courseNatures;
+                c = c.filter((cn)=>{
+                    return cn.id == e
+                });
+                console.log(c);
+                console.log(c.required);
+                this.newCourserequired=c[0].required;
+            },
+            pointChange(point){
+                this.newCourseFormData.point=(point - point % 0.5);
             }
-
-
         }
     }
 </script>
