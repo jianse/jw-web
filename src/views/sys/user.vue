@@ -412,7 +412,11 @@
                 }
             },
             roleSet(index,tableData){
+                this.axios({
+                    url:''
+                });
                 this.roleConfigDialogVisible =true;
+
             },
             test(){
                 //console.log(this.pageInfo.pageNum)
