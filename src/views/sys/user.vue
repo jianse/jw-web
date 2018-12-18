@@ -410,7 +410,7 @@
                 this.deleteConfirmed(ids);
             },
             deleteUser(index,tableData){
-                this.deleteConfirmed(tableData[index].id);
+                this.deleteConfirmed([tableData[index].id]);
             },
             tableSelectChange(selection){
                 //console.log(selection);
