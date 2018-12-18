@@ -73,9 +73,11 @@
                     </li>
                     <li style="margin-top:12px">
                         <div>
-                            <el-pagination
-                                    layout="->,prev, pager, next,jumper"
-                                    :total="total" @current-change="refreshTable()" :current-page.sync="pageInfo.pageNum" :page-size="pageInfo.pageSize">
+                            <el-pagination background
+                                           layout="->,prev, pager, next,jumper"
+                                           :total="total" @current-change="refreshTable()"
+                                           :current-page.sync="pageInfo.pageNum"
+                                           :page-size="pageInfo.pageSize">
                             </el-pagination>
                         </div>
                     </li>
