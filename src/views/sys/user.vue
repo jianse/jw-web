@@ -87,7 +87,7 @@
                 <el-dialog title="添加用户"
                            width="26%"
                            :visible.sync="newDialogVisible"
-                           @opened="onNewDialogOpened()"
+                           @opened="onNewDialogOpened"
                            v-if="newDialogVisible">
                     <div style="margin: 0 10px 0 0">
                         <el-form ref="newUserForm"
@@ -404,7 +404,7 @@
             },
             deleteSelected(){
                 let ids=[];
-                for(var i in this.selectedRow){
+                for(let i in this.selectedRow){
                     ids.push(this.selectedRow[i].id);
                 }
                 this.deleteConfirmed(ids);
