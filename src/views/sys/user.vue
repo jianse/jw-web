@@ -42,7 +42,7 @@
                                         <el-tooltip class="item" effect="dark" content="配置角色" placement="top">
                                             <el-button size="mini"
                                                     type="info"
-                                                    @click="roleSet(scope.$index,tableData)"
+                                                    @click="onRoleSetButtonClick(scope.$index,tableData)"
                                                     circle>
                                                 <i class="fas fa-users-cog"></i>
                                             </el-button>
@@ -172,12 +172,20 @@
 
             <!-- 配置角色 -->
             <div>
-
                 <el-dialog title="角色配置"
                            width="28%"
                            :visible.sync="roleConfigDialogVisible"
                            v-if="roleConfigDialogVisible">
-                    <el-table :data="roleTableData">
+                    <el-table ref="roleTable" border :data="roleTableData" @selection-change="onRoleTableSelectionChange">
+                        <el-table-column width="50" align="center">
+                            <template scope="scope">
+                                <el-radio :label="scope.row.id"
+                                          v-model="templateRadio"
+                                          >&nbsp;
+                                </el-radio>
+                            </template>
+                        </el-table-column>
+
                         <el-table-column
                                 v-for="{ align,width,type ,prop, label } in roleTableColConfigs"
                                 :type="type"
@@ -313,11 +321,11 @@
                 },
                 roleTableColConfigs:[
                     {
-                        type: 'selection',
-                        width: 50,
-                        align: 'center'
+                        width:80,
+                        prop:'id',
+                        label:'ID'
                     },
-                    {   width:100,
+                    {   width:150,
                         prop :'role',
                         label :'角色名称'
                     },
@@ -327,7 +335,9 @@
                     }
 
                 ],
-                roleTableData:[],
+                roleTableData:[{
+
+                }],
                 user:{
                     username:null,
                     password:null,
@@ -335,8 +345,9 @@
                     moble: null,
                 },
                 selectedRow:[],
-
-
+                selectedRoleRow:[],
+                templateRadio:'',
+                currentRow:{},
             }
         },
         mounted(){
@@ -411,13 +422,39 @@
                     this.deleteDisable = true;
                 }
             },
-            roleSet(index,tableData){
+            onRoleSetButtonClick(index, tableData){
+                this.currentRow = tableData[index];
                 this.axios({
                     url:'/role',
                     method:'get'
                 }).then((res)=>{
-                    console.log(res.data);
+                    //console.log(res.data);
                     this.roleTableData =res.data.data;
+                }).catch((error)=>{
+                    console.log(error);
+                });
+                this.axios({
+                    url:'/user/role/'+tableData[index].id,
+                    method:'get',
+
+                }).then((res)=>{
+                    let selected=res.data.data;
+                    let rows;
+                    if(selected.length){
+                        rows=this.roleTableData.filter((row)=>{
+                            let sr=selected.filter((selectedRow)=>{
+                                return selectedRow.id!=row.id;
+                            });
+                            return !sr.length;
+                        });
+                    }
+                    if (rows) {
+                        rows.forEach(row => {
+                            this.templateRadio=row.id;
+                        });
+                    }
+                }).catch((error)=>{
+                    console.log(error);
                 });
                 this.roleConfigDialogVisible =true;
 
@@ -585,8 +622,21 @@
                 });
             },
             onRoleConfigDialogOK(){
-                roleConfigDialogVisible =false;
+
+                this.axios({
+                    url:'user/role/'+this.currentRow.id,
+                    method:'put',
+                    params:{
+                        roleId:this.templateRadio
+                    }
+                });
+                this.roleConfigDialogVisible =false;
             },
+            onRoleTableSelectionChange(selection){
+                this.selectedRoleRow =selection.filter((row)=>{
+
+                });
+            }
 
         }
     }
