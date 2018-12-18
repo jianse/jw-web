@@ -42,7 +42,7 @@
                                         <el-tooltip class="item" effect="dark" content="配置角色" placement="top">
                                             <el-button size="mini"
                                                     type="info"
-                                                    @click="roleSet(scope.$index,tableData)"
+                                                    @click="onRoleSetButtonClick(scope.$index,tableData)"
                                                     circle>
                                                 <i class="fas fa-users-cog"></i>
                                             </el-button>
@@ -87,7 +87,7 @@
                 <el-dialog title="添加用户"
                            width="26%"
                            :visible.sync="newDialogVisible"
-                           @opened="onNewDialogOpened()"
+                           @opened="onNewDialogOpened"
                            v-if="newDialogVisible">
                     <div style="margin: 0 10px 0 0">
                         <el-form ref="newUserForm"
@@ -137,9 +137,10 @@
                            :visible.sync="modifyDialogVisible"
                            @open="onModifyDialogOpen"
                            @opened="onModifyDialogOpen"
-                           @close="onModifyDialogClose"
                            v-if="modifyDialogVisible">
-                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm" :rules="modifyUserRules">
+                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm"
+                             label-width="20%"
+                             :rules="modifyUserRules">
                         <el-form-item label="用户名" prop="username">
                             <el-input v-model="modifyUserForm.username" auto-complete="off">
 
@@ -173,11 +174,20 @@
 
             <!-- 配置角色 -->
             <div>
-
                 <el-dialog title="角色配置"
+                           width="28%"
                            :visible.sync="roleConfigDialogVisible"
                            v-if="roleConfigDialogVisible">
-                    <el-table :data="roleTableData">
+                    <el-table ref="roleTable" border :data="roleTableData" @selection-change="onRoleTableSelectionChange">
+                        <el-table-column width="50" align="center">
+                            <template scope="scope">
+                                <el-radio :label="scope.row.id"
+                                          v-model="templateRadio"
+                                          >&nbsp;
+                                </el-radio>
+                            </template>
+                        </el-table-column>
+
                         <el-table-column
                                 v-for="{ align,width,type ,prop, label } in roleTableColConfigs"
                                 :type="type"
@@ -189,8 +199,8 @@
                         </el-table-column>
                     </el-table>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="">取 消</el-button>
-                        <el-button type="primary" @click="">确 定</el-button>
+                        <el-button @click="roleConfigDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="onRoleConfigDialogOK">确 定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -313,21 +323,23 @@
                 },
                 roleTableColConfigs:[
                     {
-                        type: 'selection',
-                        width: 40,
-                        align: 'center'
+                        width:80,
+                        prop:'id',
+                        label:'ID'
                     },
-                    {   width:'80',
-                        prop :'name',
+                    {   width:150,
+                        prop :'role',
                         label :'角色名称'
                     },
-                    {   width:'80',
+                    {
                         prop :'descp',
                         label :'角色描述'
                     }
 
                 ],
-                roleTableData:{},
+                roleTableData:[{
+
+                }],
                 user:{
                     username:null,
                     password:null,
@@ -335,8 +347,9 @@
                     moble: null,
                 },
                 selectedRow:[],
-
-
+                selectedRoleRow:[],
+                templateRadio:'',
+                currentRow:{},
             }
         },
         mounted(){
@@ -391,13 +404,13 @@
             },
             deleteSelected(){
                 let ids=[];
-                for(var i in this.selectedRow){
+                for(let i in this.selectedRow){
                     ids.push(this.selectedRow[i].id);
                 }
                 this.deleteConfirmed(ids);
             },
             deleteUser(index,tableData){
-                this.deleteConfirmed(tableData[index].id);
+                this.deleteConfirmed([tableData[index].id]);
             },
             tableSelectChange(selection){
                 //console.log(selection);
@@ -411,15 +424,42 @@
                     this.deleteDisable = true;
                 }
             },
-            roleSet(index,tableData){
+            onRoleSetButtonClick(index, tableData){
+                this.currentRow = tableData[index];
                 this.axios({
-                    url:''
+                    url:'/role',
+                    method:'get'
+                }).then((res)=>{
+                    //console.log(res.data);
+                    this.roleTableData =res.data.data;
+                }).catch((error)=>{
+                    console.log(error);
+                });
+                this.axios({
+                    url:'/user/role/'+tableData[index].id,
+                    method:'get',
+
+                }).then((res)=>{
+                    let selected=res.data.data;
+                    let rows;
+                    if(selected.length){
+                        rows=this.roleTableData.filter((row)=>{
+                            let sr=selected.filter((selectedRow)=>{
+                                return selectedRow.id!=row.id;
+                            });
+                            return !sr.length;
+                        });
+                    }
+                    if (rows) {
+                        rows.forEach(row => {
+                            this.templateRadio=row.id;
+                        });
+                    }
+                }).catch((error)=>{
+                    console.log(error);
                 });
                 this.roleConfigDialogVisible =true;
 
-            },
-            test(){
-                //console.log(this.pageInfo.pageNum)
             },
             refreshTable(){
                 this.loading=true;
@@ -501,9 +541,6 @@
                 this.modifyUserForm= this.selectedRow[0];
                 console.log(this.modifyUserForm);
             },
-            onModifyDialogClose(){
-
-            },
             modifyButtonClick(){
                 this.modifyDialogVisible=true;
 
@@ -584,6 +621,22 @@
                     }
                 }).catch(() => {
                     console.log('cancel');
+                });
+            },
+            onRoleConfigDialogOK(){
+
+                this.axios({
+                    url:'user/role/'+this.currentRow.id,
+                    method:'put',
+                    params:{
+                        roleId:this.templateRadio
+                    }
+                });
+                this.roleConfigDialogVisible =false;
+            },
+            onRoleTableSelectionChange(selection){
+                this.selectedRoleRow =selection.filter((row)=>{
+
                 });
             }
 
