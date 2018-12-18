@@ -32,10 +32,10 @@
                                         <el-form-item label="姓名">
                                             <span>{{ props.row.name }}</span>
                                         </el-form-item>
-                                        <el-form-item label="学院">
+                                        <el-form-item label="教师号">
                                             <span>{{ props.row.shop }}</span>
                                         </el-form-item>
-                                        <el-form-item label="班级">
+                                        <el-form-item label="学院">
                                             <span>{{ props.row.id }}</span>
                                         </el-form-item>
                                         <el-form-item label="性别">
@@ -44,18 +44,15 @@
                                         <el-form-item label="出生年月">
                                             <span>{{ props.row.address }}</span>
                                         </el-form-item>
-                                        <el-form-item label="年级">
-                                            <span>{{ props.row.desc }}</span>
-                                        </el-form-item>
-                                        <el-form-item label="邮箱">
+                                        <el-form-item label="学历">
                                             <span>{{ props.row.desc }}</span>
                                         </el-form-item>
                                     </el-form>
                                 </template>
                             </el-table-column>
-                            <el-table-column label="学号" prop="id">
+                            <el-table-column label="姓名" prop="id">
                             </el-table-column>
-                            <el-table-column label="姓名" prop="name">
+                            <el-table-column label="所属学院" prop="name">
                             </el-table-column>
                             <el-table-column label="操作" prop="desc">
                                 <template slot-scope="scope">
@@ -65,6 +62,9 @@
                                         <span>
                                             <template>
                                                 <el-form ref="form" :model="form" label-width="80px">
+                                                    <el-form-item label="教师号">
+                                                        <el-input v-model="form.name"></el-input>
+                                                    </el-form-item>
                                                     <el-form-item label="姓名">
                                                         <el-input v-model="form.name"></el-input>
                                                     </el-form-item>
@@ -72,12 +72,6 @@
                                                         <el-select v-model="form.region" placeholder="请选择学院">
                                                             <el-option label="信息学院" value="shanghai"></el-option>
                                                             <el-option label="机电学院" value="beijing"></el-option>
-                                                        </el-select>
-                                                    </el-form-item>
-                                                    <el-form-item label="班级">
-                                                        <el-select v-model="form.region" placeholder="请选择班级">
-                                                            <el-option label="惠普测试" value="shanghai"></el-option>
-                                                            <el-option label="惠普开发" value="beijing"></el-option>
                                                         </el-select>
                                                     </el-form-item>
                                                     <el-form-item label="出生年月">
@@ -92,15 +86,10 @@
                                                             <el-radio v-model="radio" label="2">女</el-radio>
                                                         </el-checkbox-group>
                                                     </el-form-item>
-                                                    <el-form-item label="年级">
-                                                        <el-select v-model="form.region" placeholder="请选择年级">
-                                                            <el-option label="2015" value="beijing"></el-option>
-                                                            <el-option label="2016" value="shanghai"></el-option>
-                                                            <el-option label="2017" value="beijing"></el-option>
-                                                            <el-option label="2018" value="beijing"></el-option>
-                                                        </el-select>
+                                                    <el-form-item label="学历">
+                                                        <el-input v-model="form.name"></el-input>
                                                     </el-form-item>
-                                                    <el-form-item label="邮箱">
+                                                    <el-form-item label="所属学院">
                                                         <el-input v-model="form.name"></el-input>
                                                     </el-form-item>
                                                     <el-form-item>

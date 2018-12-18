@@ -111,6 +111,38 @@ export default new Router({
             title: 'update',
           },
         },
+        {
+          path: 'search',
+          name: 'search',
+          component: () => import('./views/score/search.vue'),
+          meta: {
+            title: 'search',
+          },
+        },
+        {
+          path: 'upscore',
+          name: 'upscore',
+          component: () => import('./views/score/upscore.vue'),
+          meta: {
+            title: 'upscore',
+          },
+        },
+        {
+          path: 'searcht',
+          name: 'searcht',
+          component: () => import('./views/teacher/searcht.vue'),
+          meta: {
+            title: 'searcht',
+          },
+        },
+        {
+          path: 'uptea',
+          name: 'uptea',
+          component: () => import('./views/teacher/uptea.vue'),
+          meta: {
+            title: 'uptea',
+          },
+        },
       ],
     },
   ],
