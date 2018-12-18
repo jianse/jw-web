@@ -137,7 +137,6 @@
                            :visible.sync="modifyDialogVisible"
                            @open="onModifyDialogOpen"
                            @opened="onModifyDialogOpen"
-                           @close="onModifyDialogClose"
                            v-if="modifyDialogVisible">
                     <el-form ref="modifyUserForm" status-icon :model="modifyUserForm" :rules="modifyUserRules">
                         <el-form-item label="用户名" prop="username">
@@ -175,6 +174,7 @@
             <div>
 
                 <el-dialog title="角色配置"
+                           width="28%"
                            :visible.sync="roleConfigDialogVisible"
                            v-if="roleConfigDialogVisible">
                     <el-table :data="roleTableData">
@@ -189,8 +189,8 @@
                         </el-table-column>
                     </el-table>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="">取 消</el-button>
-                        <el-button type="primary" @click="">确 定</el-button>
+                        <el-button @click="roleConfigDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="onRoleConfigDialogOK">确 定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -314,20 +314,20 @@
                 roleTableColConfigs:[
                     {
                         type: 'selection',
-                        width: 40,
+                        width: 50,
                         align: 'center'
                     },
-                    {   width:'80',
-                        prop :'name',
+                    {   width:100,
+                        prop :'role',
                         label :'角色名称'
                     },
-                    {   width:'80',
+                    {
                         prop :'descp',
                         label :'角色描述'
                     }
 
                 ],
-                roleTableData:{},
+                roleTableData:[],
                 user:{
                     username:null,
                     password:null,
@@ -413,13 +413,14 @@
             },
             roleSet(index,tableData){
                 this.axios({
-                    url:''
+                    url:'/role',
+                    method:'get'
+                }).then((res)=>{
+                    console.log(res.data);
+                    this.roleTableData =res.data.data;
                 });
                 this.roleConfigDialogVisible =true;
 
-            },
-            test(){
-                //console.log(this.pageInfo.pageNum)
             },
             refreshTable(){
                 this.loading=true;
@@ -500,9 +501,6 @@
             onModifyDialogOpen(){
                 this.modifyUserForm= this.selectedRow[0];
                 console.log(this.modifyUserForm);
-            },
-            onModifyDialogClose(){
-
             },
             modifyButtonClick(){
                 this.modifyDialogVisible=true;
@@ -585,7 +583,10 @@
                 }).catch(() => {
                     console.log('cancel');
                 });
-            }
+            },
+            onRoleConfigDialogOK(){
+                roleConfigDialogVisible =false;
+            },
 
         }
     }
