@@ -138,7 +138,9 @@
                            @open="onModifyDialogOpen"
                            @opened="onModifyDialogOpen"
                            v-if="modifyDialogVisible">
-                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm" :rules="modifyUserRules">
+                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm"
+                             label-width="20%"
+                             :rules="modifyUserRules">
                         <el-form-item label="用户名" prop="username">
                             <el-input v-model="modifyUserForm.username" auto-complete="off">
 
