@@ -127,6 +127,22 @@ export default new Router({
             title: 'upscore',
           },
         },
+        {
+          path: 'searcht',
+          name: 'searcht',
+          component: () => import('./views/teacher/searcht.vue'),
+          meta: {
+            title: 'searcht',
+          },
+        },
+        {
+          path: 'uptea',
+          name: 'uptea',
+          component: () => import('./views/teacher/uptea.vue'),
+          meta: {
+            title: 'uptea',
+          },
+        },
       ],
     },
   ],
