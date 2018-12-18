@@ -1,7 +1,7 @@
 <template>
     <el-container style="height:100%;">
         <el-aside  width="260px" style="height: 100%;background-color: #545c64 ;">
-            <el-menu :default-openeds="['1']"
+            <el-menu :default-openeds="defaultOpened"
                      @select="select"
                      background-color="#545c64"
                      text-color="#fff"
@@ -87,7 +87,8 @@
                 userHeadIconUrl:'',
                 breadcrumbData:[],
                 menuList:[],
-                menuSub:[]
+                menuSub:[],
+                defaultOpened:['1']
             }
         },mounted(){
             this.axios({
@@ -96,7 +97,6 @@
             }).then((response)=>{
                 this.username = response.data.data.username;
             });
-
             this.axios({
                 url:'/menu/',
                 method:'get'
@@ -108,10 +108,6 @@
                         this.menuSub.push(this.menuList[i].children[j]);
                     }
                 }
-
-
-
-                //console.log(this);
             }).catch((error)=>{
                 alert(error);
             })
@@ -122,13 +118,11 @@
                     return (menu.url!=null && menu.url!=''&& menu.id == e)
                 });
                 this.$router.push(filterMenus[0].url);
-                this.breadcrumbData.splice(0,1,filterMenus[0])
+                this.breadcrumbData.splice(0,1,filterMenus[0]);
             },
             getWindowHeight(){
                 return window.innerHeight;
-
             }
         }
-
     };
 </script>
