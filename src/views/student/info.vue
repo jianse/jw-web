@@ -67,7 +67,7 @@
         margin-bottom: 0;
 
         &:last-child {
-            margin-bottom: 25px;
+            margin-bottom: 0;
         }
     }
 
