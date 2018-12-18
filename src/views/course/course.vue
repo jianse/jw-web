@@ -14,6 +14,10 @@
                         <i class="el-icon-plus"></i>
                         新建
                     </el-button>
+                    <el-button type="primary" @click="newModal=true">
+                        <i class="el-icon-delete"></i>
+                        删除
+                    </el-button>
                 </el-col>
             </el-row>
         </div>
@@ -55,34 +59,22 @@
                             <el-table-column prop="courseNature.description" label="课程性质描述" width="300">
                             </el-table-column>
                             <el-table-column align="center" width="200" label="操作">
-
-
                                 <template slot-scope="scope" >
                                     <!--配置角色按钮-->
-                                    <el-tooltip class="item" effect="dark" content="配置角色" placement="top">
+                                    <el-tooltip class="item" effect="dark" content="修改" placement="top">
                                         <el-button size="mini"
-                                                   type="info"
-                                                   @click="onRoleSetButtonClick(scope.$index,tableData)"
+                                                   type="success"
+                                                   @click="onEditClick(scope.$index,courseTableData)"
                                                    circle>
-                                            <i class="fas fa-users-cog"></i>
+                                            <i class="fas fa-edit"></i>
                                         </el-button>
                                     </el-tooltip>
-
-                                    <el-tooltip class="item" effect="dark" content="重置密码" placement="top">
-                                        <el-button size="mini"
-                                                   type="warning"
-                                                   @click="resetPass(scope.$index,tableData)"
-                                                   circle>
-                                            <i class="fas fa-keyboard"></i>
-                                        </el-button>
-                                    </el-tooltip>
-
-                                    <el-tooltip class="item" effect="dark" content="删除用户" placement="top">
+                                    <el-tooltip class="item" effect="dark" content="删除" placement="top">
                                         <el-button
                                                 size="mini"
                                                 type="danger"
                                                 icon="el-icon-delete"
-                                                @click="deleteUser(scope.$index,tableData)"
+                                                @click="onDeleteClick(scope.$index,courseTableData)"
                                                 circle>
                                         </el-button>
                                     </el-tooltip>
@@ -94,7 +86,10 @@
                 <li>
                     <div class="block">
                         <span class="demonstration"></span>
-                        <el-pagination layout="->,prev, pager, next" :total="total">
+                        <el-pagination background
+                                       layout="->,prev, pager, next"
+                                       :total="total"
+                                       @current-change="onPageChange">
                         </el-pagination>
                     </div>
                 </li>
@@ -150,14 +145,75 @@
                     this.total = res.data.data.total;
                 })
             },
+            onPageChange(){
+                this.fetchCourseData();
+            },
             handleSelectionChange(selection){
 
-            }
-        }
+            },
+            onEditClick(){
 
+            },
+            onDeleteClick(index,tableData){
+                console.log(tableData);
+                console.log(index);
+                this.deleteConfirmed([tableData[index].course.id]);
+            },
+            deleteConfirmed(ids) {
+                this.$confirm('此操作将永久删除课程，是否继续?','警告',{
+                    confirmButtonText:'确定',
+                    cancelButtonText:'取消',
+                    type:'warning'
+                }).then(()=>{
+                    this.axios({
+                        url:'/course',
+                        method:'delete',
+                        data:ids
+                    }).then((response)=>{
+                        if (response.data.status==100) {
+                            this.$notify({
+                                title:'删除成功！',
+                                message:response.data.message,
+                                type:'success',
+                                position: 'bottom-right',
+                            });
+                        }else {
+                            this.$notify({
+                                title:'删除失败！',
+                                message:response.data.message,
+                                type:'error',
+                                position: 'bottom-right',
+                            });
+                        }
+                    }).catch((error)=>{
+                        this.$notify({
+                            title:'删除失败！',
+                            message:'操作中遇到异常请与管理员联系解决！',
+                            type:'error',
+                            position: 'bottom-right',
+                        });
+                    });
+                    this.refreshTable();
+                }).catch((error)=>{
+                    this.$notify({
+                        title:'取消删除！',
+                        message:'已取消删除',
+                        type:'info',
+                        position: 'bottom-right',
+                    });
+                });
+            }
+
+        }
     }
 </script>
 
 <style scoped>
-
+    .fa,.fas  {
+        vertical-align: middle;
+        margin:0;
+        width: 13px;
+        text-align: center;
+        font-size: 12px;
+    }
 </style>
