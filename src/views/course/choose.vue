@@ -1,181 +1,136 @@
 <template>
-    <el-tabs type="border-card">
-        <el-tab-pane>
-            <span slot="label"><i class="el-icon-date"></i> 可选选课</span>
-            <div style="margin: 10px">
 
-                <div>
-                    <el-row :gutter="5">
-                        <el-col :span="12">
-                            <el-input v-model="keyword"></el-input>
-                        </el-col>
-                        <el-col :span="5">
-                            <el-button type="primary">
-                                <i class="el-icon-search"></i>
-                                <span>查找</span>
-                            </el-button>
-                        </el-col>
-                    </el-row>
+    <div>
+        <div style="margin-bottom: 22px">
+            <el-row :gutter="5">
+                <el-form :inline="true" :model="qO" class="demo-form-inline">
+                    <el-form-item>
+                        <el-select :disabled="selectDisable" v-model="qO.graId"  placeholder="请选择学年" @change="onSelectChange" style="width: 100%">
+                            <el-option v-for="item in gradeSelectorData"
+                                       :key="item.id"
+                                       :label="item.name"
+                                       :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input v-model="qO.keyword" placeholder="请输入">
+
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="fetchChooseCourseTableData">
+                            <i class="el-icon-search"></i>
+                            <span>查找</span>
+                        </el-button>
+                    </el-form-item>
+                </el-form>
+            </el-row>
+        </div>
+
+        <el-tabs type="card" @tab-click="onSwitch" :value="tabValue">
+            <el-tab-pane :name="tabNames[0]" >
+                <span slot="label"><i class="el-icon-date"></i> 可选选课</span>
+                <div style="margin: 10px">
+                    <el-table border
+                              ref="multipleTable"
+                              :data="chooseTableData"
+                              tooltip-effect="dark">
+                        <el-table-column label="课程名称" width="150" prop="course.name">
+
+                        </el-table-column>
+                        <el-table-column label="开课学院" prop="deptName" width="200">
+                        </el-table-column>
+                        <el-table-column label="教师" prop="teacherName" width="150">
+                        </el-table-column>
+                        <el-table-column label="学分" prop="course.point" sortable width="100">
+                        </el-table-column>
+                        <el-table-column label="学时" prop="course.hour" sortable width="100">
+                        </el-table-column>
+                        <el-table-column label="班级容量" prop="sits" sortable width="200">
+                        </el-table-column>
+                        <el-table-column label="操作" width="200">
+                            <template slot-scope="scope">
+                                <el-button size="medium" type="primary" round @click="dialogVisible = true"><i
+                                        class="fas fa-check"></i>
+                                    选入课程</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
                 </div>
+            </el-tab-pane>
+            <el-tab-pane :name="tabNames[1]">
+                <span slot="label"><i></i>已选课程</span>
+                <div style="margin: 10px">
+                    <el-table border
+                              ref="multipleTable"
+                              :data="chooseTableData"
+                              tooltip-effect="dark">
+                        <el-table-column label="课程名称" width="150" prop="course.name">
 
-                <div>
-                    <ul style="list-style: none;padding: 0">
-                        <li>
-                            <div>
-                                <el-table border
-                                          ref="multipleTable"
-                                          :data="chooseTableData"
-                                          tooltip-effect="dark">
-                                    <el-table-column label="课程名称" width="150" prop="course.name">
-
-                                    </el-table-column>
-                                    <el-table-column label="开课学院" prop="deptName" width="200">
-                                    </el-table-column>
-                                    <el-table-column label="教师" prop="teacherName" width="150">
-                                    </el-table-column>
-                                    <el-table-column label="学分" prop="course.point" sortable width="100">
-                                    </el-table-column>
-                                    <el-table-column label="学时" prop="course.hour" sortable width="100">
-                                    </el-table-column>
-                                    <el-table-column label="班级容量" prop="sits" sortable width="200">
-                                    </el-table-column>
-                                    <el-table-column label="操作" width="200">
-                                        <template slot-scope="scope">
-                                            <el-button size="medium" type="primary" round @click="dialogVisible = true"><i
-                                                    class="fas fa-check"></i>
-                                                选入课程</el-button>
-                                        </template>
-                                    </el-table-column>
-
-                                </el-table>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="block">
-                                <el-pagination background
-                                               layout="->,prev, pager, next"
-                                               :current-page.sync="pageInfo.pageNum"
-                                               @current-change="fetchChooseCourseTableData"
-                                               :total="total" >
-                                </el-pagination>
-                            </div>
-                        </li>
-                    </ul>
-
-
-
+                        </el-table-column>
+                        <el-table-column label="开课学院" prop="deptName" width="200">
+                        </el-table-column>
+                        <el-table-column label="教师" prop="teacherName" width="150">
+                        </el-table-column>
+                        <el-table-column label="学分" prop="course.point" sortable width="100">
+                        </el-table-column>
+                        <el-table-column label="学时" prop="course.hour" sortable width="100">
+                        </el-table-column>
+                        <el-table-column label="班级容量" prop="sits" sortable width="200">
+                        </el-table-column>
+                        <el-table-column label="操作" width="200">
+                            <template slot-scope="scope">
+                                <el-button size="medium" type="primary" round @click="dialogVisible = true"><i
+                                        class="fas fa-check"></i>
+                                    退选课程</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
                 </div>
-            </div>
+            </el-tab-pane>
 
-        </el-tab-pane>
-        <el-tab-pane label="已选课程">
-            <div style="margin: 10px">
-
-                <div>
-                    <el-row :gutter="5">
-                        <el-col :span="5">
-                            <el-input v-model="keyword" placeholder="请输入"></el-input>
-                        </el-col>
-                        <el-col :span="5">
-                            <el-button type="primary">
-                                <i class="el-icon-search"></i>
-                                <span>查找</span>
-                            </el-button>
-                        </el-col>
-                    </el-row>
-                </div>
-                <br>
-                <div>
-                    <el-select v-model="graId" placeholder="请选择学年">
-                        <el-option v-for="item in gradeSelectorData"
-                                   :key="item.id"
-                                   :label="item.name"
-                                   :value="item.id">
-                        </el-option>
-                    </el-select>
-                </div>
-
-                <div>
+        </el-tabs>
+        <div class="block">
+            <el-pagination background
+                           layout="->,prev, pager, next"
+                           :current-page.sync="pageInfo.pageNum"
+                           @current-change="fetchChooseCourseTableData"
+                           :total="total" >
+            </el-pagination>
+        </div>
+    </div>
 
 
-                    <ul style="list-style: none;padding: 0">
-
-                        <li>
-                            <div>
-                                <el-table ref="multipleTable" :data="tableData3" tooltip-effect="dark" style="width: 100%"
-                                    @selection-change="handleSelectionChange">
-                                    <el-table-column type="selection" width="55">
-                                    </el-table-column>
-                                    <el-table-column label="课程名称" width="150">
-                                        <template slot-scope="scope">{{ scope.row.date }}</template>
-                                    </el-table-column>
-                                    <el-table-column prop="name" label="开课学院" width="200">
-                                    </el-table-column>
-                                    <el-table-column label="教师" width="150">
-                                    </el-table-column>
-                                    <el-table-column label="学分" sortable width="100">
-                                    </el-table-column>
-                                    <el-table-column label="学时" sortable width="100">
-                                    </el-table-column>
-                                    <el-table-column label="班级容量" sortable width="200">
-                                    </el-table-column>
-                                    <el-table-column label="操作" width="200">
-                                        <template slot-scope="scope">
-                                            <el-button size="medium" type="info" round @click="dialogVisible = true"><i
-                                                    class="fas fa-minus-circle"></i>
-                                                退选课程</el-button>
-                                        </template>
-                                    </el-table-column>
-
-                                </el-table>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="block">
-                                <span class="demonstration"></span>
-                                <el-pagination layout="prev, pager, next" :total="1000">
-                                </el-pagination>
-                            </div>
-                        </li>
-                    </ul>
-
-
-
-                </div>
-            </div>
-        </el-tab-pane>
-
-    </el-tabs>
 </template>
 <script>
     export default {
         name: "Role",
         data() {
             return {
-                graId:1,
+                selectDisable:true,
+                tabValue:'tab1',
+                tabNames:['tab1','tab2'],
                 chooseTableData:[],
                 pageInfo:{
                     pageNum:1,
                     pageSize:10,
                 },
                 total:10,
-                keyword:'',
-                gradeSelectorData:[
-                    {
-                        id: 1,
-                        name: '2016-2017第一学期'
-                    }
-                ],
+                gradeSelectorData:[],
                 qO:{
                     keyword:'',
                     deptId:null,
                     graId :null,
-                }
+                },
+                currentGrade:{}
             };
         },
         mounted() {
-            this.fetchChooseCourseTableData();
             this.fetchGradeSelectorData();
+            this.fetchCurrentGrade();
+            this.fetchChooseCourseTableData();
+
         },
         methods:{
             mSubmit(ref,axiosConf,okCallback,msgConf){
@@ -229,12 +184,11 @@
                     params:{
                         pageNum:this.pageInfo.pageNum,
                         pageSize:this.pageInfo.pageSize,
-                        keyword:this.keyword,
+                        keyword:this.qO.keyword,
                         deptId:this.qO.deptId,
                         graId :this.qO.graId,
                     }
                 },(res)=>{
-                    console.log(res);
                     this.total =res.total;
                     this.chooseTableData = res.list;
                 },{
@@ -254,9 +208,9 @@
                     url:'/grade',
                     method:'get',
                 },(res)=>{
-                    console.log(res);
+                    //console.log(res);
                     this.gradeSelectorData=res;
-                    console.log(this.gradeSelectorData);
+                    //console.log(this.gradeSelectorData);
                 },{
                     okMsg:{
                         enable:false
@@ -268,6 +222,40 @@
                         enable:false
                     }
                 })
+            },
+            fetchCurrentGrade(){
+                this.mRemote({
+                    url:'/grade/current',
+                    method:'get'
+                },(res)=>{
+                    this.currentGrade=res;
+                    this.qO.graId = res.id;
+
+                },{
+                    okMsg:{
+                        enable:false,
+                    },
+                    failMsg:{
+                        enable:false,
+                    },
+                    errorMsg:{
+                        enable:false,
+                    },
+                })
+            },
+            onSwitch(tab){
+                if(tab.name==this.tabNames[0]){
+                    this.qO.graId=this.currentGrade.id;
+                    this.selectDisable = true;
+
+                }else {
+                    this.selectDisable = false;
+                }
+                this.fetchChooseCourseTableData();
+            },
+            onSelectChange(value){
+                this.fetchChooseCourseTableData();
+
             }
         }
 
