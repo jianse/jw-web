@@ -6,6 +6,7 @@
         <el-row>
             <el-col :span="24">
                 <div class="grid-content bg-purple-dark">
+                    <br>
                     <p>学生个人信息</p>
                 </div>
             </el-col>
@@ -13,46 +14,54 @@
         <el-row :gutter="20">
             <el-col :span="8">
                 <div class="grid-content bg-purple">
-                    <p>学号：1608090111</p>
+                    <br>
+                    <p>{{id}}</p>
                 </div>
             </el-col>
             <el-col :span="8">
                 <div class="grid-content bg-purple-light">
-                    <p>姓名：王小虎</p>
+                    <br>
+                    <p>{{name}}</p>
                 </div>
             </el-col>
         </el-row>
         <el-row :gutter="20">
             <el-col :span="8">
                 <div class="grid-content bg-purple">
-                    <p>姓别：男</p>
+                    <br>
+                    <p>{{Gender}}</p>
                 </div>
             </el-col>
             <el-col :span="8">
                 <div class="grid-content bg-purple-light">
-                    <p>出生年月日：1997-6-30</p>
+                    <br>
+                    <p>{{Birth}}</p>
                 </div>
             </el-col>
             <el-col :span="8">
                 <div class="grid-content bg-purple">
-                    <p>年级：2016</p>
+                    <br>
+                    <p>{{Grade}}</p>
                 </div>
             </el-col>
         </el-row>
         <el-row :gutter="20">
             <el-col :span="8">
                 <div class="grid-content bg-purple">
-                    <p>学院：信息学院</p>
+                    <br>
+                    <p>{{department}}</p>
                 </div>
             </el-col>
             <el-col :span="8">
                 <div class="grid-content bg-purple-light">
-                    <p>班级：惠普测试161</p>
+                    <br>
+                    <p>{{myclass}}</p>
                 </div>
             </el-col>
             <el-col :span="8">
                 <div class="grid-content bg-purple">
-                    <p>邮箱：123456@qq.com</p>
+                    <br>
+                    <p>{{Email}}</p>
                 </div>
             </el-col>
 
@@ -61,6 +70,27 @@
 
     </div>
 </template>
+
+<script>
+    export default {
+        name: "Role",
+
+        data() {
+            return {
+                studentTableData: [{
+                    id: '1',
+                    name: '张三',
+                    Gender: '女',
+                    Birth: '1997-06-30',
+                    department: '信息学院',
+                    myclass: '计算机161',
+                    Grade:'2016',
+                    Email:'123'
+                }],
+            };
+        },
+    }
+</script>
 
 <style scoped>
     .el-row {
@@ -73,7 +103,9 @@
 
     .el-col {
         border-radius: 4px;
+        text-align: center;
     }
+
 
     .bg-purple-dark {
         background: #99a9bf;
