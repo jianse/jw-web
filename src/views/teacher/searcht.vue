@@ -114,8 +114,8 @@
             };
 
         },
-        methods(){
-            refreshTable();{
+        methods:{
+            refreshTable(){
                 this.loading=true;
                 this.axios({
                     url:'',
@@ -134,11 +134,11 @@
                     alert(error);
                 });
                 this.loading = false;
-            };
-            onPageChange();{
+            },
+            onPageChange(){
                 this.fetchCourseData();
-            }
-            fetchCourseData();{
+            },
+            fetchCourseData(){
                 this.axios({
                     url:'',
                     method:'get',
@@ -147,7 +147,7 @@
                     this.teacherTableData=res.data.data.list;
                     this.total = res.data.data.total;
                 })
-            }
+            },
         }
 
     }
