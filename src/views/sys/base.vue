@@ -49,8 +49,9 @@
                     <el-breadcrumb-item to="/base/welcome"><i class="fas fa-home"></i>Home</el-breadcrumb-item>
                     <el-breadcrumb-item v-for="item in breadcrumbData" :to="item.url" :key="item.id">{{item.name}}</el-breadcrumb-item>
                 </el-breadcrumb>
-                <el-card >
-                    <router-view></router-view>
+                <el-card  shadow="hover">
+                    <router-view>
+                    </router-view>
                 </el-card>
 
             </el-main>
@@ -120,9 +121,6 @@
                 this.$router.push(filterMenus[0].url);
                 this.breadcrumbData.splice(0,1,filterMenus[0]);
             },
-            getWindowHeight(){
-                return window.innerHeight;
-            }
         }
     };
 </script>
