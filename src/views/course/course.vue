@@ -135,7 +135,10 @@
                                        placeholder="请选择"
                                        @change="newCourseFormSelectChange"
                                        style="width: 100%">
-                                <el-option v-for="item in courseNatures" :value="item.id" :key="item.id" :label="item.name">
+                                <el-option v-for="item in courseNatures"
+                                           :value="item.id"
+                                           :key="item.id"
+                                           :label="item.name">
 
                                 </el-option>
                             </el-select>
