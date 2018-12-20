@@ -77,6 +77,14 @@ const routers = [
         },
       },
       {
+        path: 'students',
+        name: 'students',
+        component: () => import('./views/student/students.vue'),
+        meta: {
+          title: '学生信息',
+        },
+      },
+      {
         path: 'sch',
         name: 'sch',
         component: () => import('./views/course/sch.vue'),
