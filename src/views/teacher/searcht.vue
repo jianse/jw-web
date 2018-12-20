@@ -106,9 +106,7 @@
                     title:['']
 
                 }],
-                teacherTableData:[{
-
-                }],
+                
                 total:10,
                 multipleSelection: [],
             };
