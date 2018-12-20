@@ -6,7 +6,7 @@
                     <el-input v-model="searchKeyword"></el-input>
                 </el-col>
                 <el-col :span="19">
-                    <el-button type="primary" @click="fetchCourseData">
+                    <el-button type="primary">
                         <i class="el-icon-search"></i>
                         <span>查找</span>
                     </el-button>
@@ -14,7 +14,7 @@
                         <i class="el-icon-plus"></i>
                         新建
                     </el-button>
-                    <el-button type="danger" :disabled="deleteButtonDisable" @click="onDeleteClick">
+                    <el-button type="primary" :disabled="deleteButtonDisable" @click="onDeleteClick">
                         <i class="el-icon-delete"></i>
                         删除
                     </el-button>
@@ -26,32 +26,28 @@
             <ul style="list-style: none;padding: 0">
                 <li>
                     <div>
-                        <el-table border ref="multipleTable"
-                                  :data="courseTableData"
-                                  v-loading="loading"
-                                  tooltip-effect="dark"
-                                  style="width: 100%; margin-bottom: 10px"
+                        <el-table border ref="multipleTable" :data="courseTableData" tooltip-effect="dark" style="width: 100%"
                             @selection-change="handleSelectionChange">
                             <el-table-column type="selection" width="50" align="center">
                             </el-table-column>
 
-                            <el-table-column sortable label="课程编号" width="110" align="center" prop="course.id">
+                            <el-table-column label="课程编号" width="150" prop="course.id">
 
                             </el-table-column>
 
-                            <el-table-column prop="course.name" label="课程名称" align="center" width="250">
+                            <el-table-column prop="course.name" label="课程名称" width="250">
                             </el-table-column>
 
-                            <el-table-column prop="course.point" label="学分" align="center" width="150">
+                            <el-table-column prop="course.point" label="学分" width="150">
                             </el-table-column>
 
-                            <el-table-column prop="course.hour" label="学时" align="center" width="150">
+                            <el-table-column prop="course.hour" label="学时" width="150">
                             </el-table-column>
 
-                            <el-table-column prop="courseNature.name" label="课程性质" align="center" width="100">
+                            <el-table-column prop="courseNature.name" label="课程性质" width="200">
                             </el-table-column>
 
-                            <el-table-column prop="courseNature.required" label="必修" align="center" width="110">
+                            <el-table-column prop="courseNature.required" label="必修">
                                 <template slot-scope="scope">
                                     <el-switch
                                             v-model="scope.row.courseNature.required"
@@ -60,14 +56,15 @@
                                     </el-switch>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="courseNature.description" label="课程性质描述">
+                            <el-table-column prop="courseNature.description" label="课程性质描述" width="300">
                             </el-table-column>
                             <el-table-column align="center" width="200" label="操作">
                                 <template slot-scope="scope" >
+                                    <!--配置角色按钮-->
                                     <el-tooltip class="item" effect="dark" content="修改" placement="top">
                                         <el-button size="mini"
                                                    type="success"
-                                                   @click="onInlineEditClick(scope.$index,courseTableData)"
+                                                   @click="onEditClick(scope.$index,courseTableData)"
                                                    circle>
                                             <i class="fas fa-edit"></i>
                                         </el-button>
@@ -91,8 +88,6 @@
                         <el-pagination background
                                        layout="->,prev, pager, next"
                                        :total="total"
-                                       :page-size="pageInfo.pageSize"
-                                       :current-page.sync="pageInfo.pageNum"
                                        @current-change="onPageChange">
                         </el-pagination>
                     </div>
@@ -123,7 +118,7 @@
                                              :step="0.5"
                                              :precision="1"
                                              :max="8"
-                                             :min="1" @change="pointChange" @blur="pointChange" style="width:100%">
+                                             :min="1" @change="pointChange" style="width:100%">
 
                             </el-input-number>
                         </el-form-item>
@@ -139,10 +134,7 @@
                                        placeholder="请选择"
                                        @change="newCourseFormSelectChange"
                                        style="width: 100%">
-                                <el-option v-for="item in courseNatures"
-                                           :value="item.id"
-                                           :key="item.id"
-                                           :label="item.name">
+                                <el-option v-for="item in courseNatures" :value="item.id" :key="item.id" :label="item.name">
 
                                 </el-option>
                             </el-select>
@@ -170,8 +162,6 @@
 
         data() {
             return {
-                loading:true,
-                isEdit:false,
                 deleteButtonDisable:true,
                 searchKeyword:'',
                 total:10,
@@ -179,13 +169,27 @@
                     pageNum:1,
                     pageSize:10
                 },
-                courseTableData:[],
+                courseTableData:[{
+                    course: {
+                        id: 2,
+                        couId: null,
+                        name: "计算机网络",
+                        point: 2,
+                        hour: 48
+                    },
+                    courseNature: {
+                        id: 1,
+                        name: "专业必修课",
+                        description: ".",
+                        required: true
+                    }
+                },],
                 selected:[],
                 newDialogVisible:false,
                 newCourseFormData:{
                     name:'',
                     couId:null,
-                    point:1,
+                    point:null,
                     hour:null,
                 },
                 newCourseFormRoles:{
@@ -202,7 +206,14 @@
                         {required:true,message:'请输入学时',trigger:'blur'}
                     ],
                 },
-                courseNatures:[],
+                courseNatures:[
+                    {
+                        id: 1,
+                        name: "专业必修课",
+                        description: ".",
+                        required: true
+                    }
+                ],
                 newCourseDialogSelectData:null,
                 newCourserequired:false,
             };
@@ -224,23 +235,16 @@
                 })
             },
             fetchCourseData(){
-                this.loading=true;
                 this.axios({
                     url:'/course/page',
                     method:'get',
-                    params:{
-                        pageNum:this.pageInfo.pageNum,
-                        pageSize:this.pageInfo.pageSize,
-                        keyword:this.searchKeyword
-                    }
+                    data:this.pageInfo
                 }).then((res)=>{
                     this.courseTableData=res.data.data.list;
                     this.total = res.data.data.total;
-                    this.loading=false;
                 })
             },
             onPageChange(){
-                console.log(this.pageInfo);
                 this.fetchCourseData();
             },
             handleSelectionChange(selection){
@@ -251,48 +255,7 @@
                     this.deleteButtonDisable = true;
                 }
             },
-            mSubmit(ref,axiosConf,okCallback,msgConf){
-                this.$refs[ref].validate((valid)=>{
-                    if(valid){
-                        this.mRemote(axiosConf,okCallback,msgConf)
-                    }
-                });
-            },
-            mRemote(axiosConf,okCallback,msgConf){
-                //{okMsg:{title,message},failMsg:{title,message},errorMsg:{title,message}}
-
-                this.axios(axiosConf).then((res)=>{
-                    if(res.data.status==100){
-                        if(msgConf.okMsg.enable){
-                            this.$notify({
-                                title:msgConf.okMsg.title,
-                                message:msgConf.okMsg.message,
-                                type:'success',
-                                position: 'bottom-right',
-                            });
-                        }
-                        okCallback(res.data.data)
-                    }else {
-                        if(msgConf.failMsg.enable) {
-                            this.$notify({
-                                title: msgConf.failMsg.title,
-                                message: msgConf.failMsg.message,
-                                type: 'warning',
-                                position: 'bottom-right',
-                            });
-                        }
-                    }
-                }).catch((error)=>{
-                    if(msgConf.errorMsg.enable) {
-                        this.$notify({
-                            title: msgConf.errorMsg.title,
-                            message: msgConf.errorMsg.message,
-                            type: 'error',
-                            position: 'bottom-right',
-                        });
-                    }
-                });
-
+            onEditClick(){
 
             },
             onInlineDeleteClick(index, tableData){
@@ -353,73 +316,42 @@
                 this.fetchCourseData();
             },
             onNewCourseDialogOk(){
-                if(this.isEdit){
-                    this.mSubmit('newCourseForm',{
-                        url:'/course/'+ this.newCourseFormData.id,
-                        method:'put',
-                        data:this.newCourseFormData
-                    },
-                        (res)=>{
-                            this.isEdit= false;
-                            this.newDialogVisible = false;
-                            this.fetchCourseData();
-                        },{
-                            okMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            },
-                            failMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            },
-                            errorMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            }
-                        });
-
-                }else {
-                    this.$refs['newCourseForm'].validate((valid)=>{
-                        if(valid){
-                            this.axios({
-                                url:'/course',
-                                method:'post',
-                                data:this.newCourseFormData,
-                            }).then((res)=>{
-                                if(res.data.status==100){
-                                    this.$notify({
-                                        title:'添加成功！',
-                                        message:'添加课程成功',
-                                        type:'success',
-                                        position: 'bottom-right',
-                                    });
-                                    this.newDialogVisible=false;
-                                    this.fetchCourseData();
-                                    this.$refs['newCourseForm'].resetFields();
-                                }else {
-                                    this.$notify({
-                                        title:'添加失败！',
-                                        message:response.data.message,
-                                        type:'warning',
-                                        position: 'bottom-right',
-                                    });
-                                    this.newDialogVisible=false;
-                                }
-                            }).catch((error)=>{
+                this.$refs['newCourseForm'].validate((valid)=>{
+                    if(valid){
+                        this.axios({
+                            url:'',
+                            method:'post',
+                            data:this.newCourseFormData,
+                        }).then((res)=>{
+                            if(res.data.status==100){
                                 this.$notify({
-                                    title:'错误！',
-                                    message:'新建课程发生错误，请向管理员报告此错误。',
-                                    type:'error',
+                                    title:'添加成功！',
+                                    message:'添加课程成功',
+                                    type:'success',
                                     position: 'bottom-right',
                                 });
-                            })
-                        }
-                    });
-                }
-
+                                this.newDialogVisible=false;
+                                this.fetchCourseData();
+                                this.$refs['newCourseForm'].resetFields();
+                            }else {
+                                this.$notify({
+                                    title:'添加失败！',
+                                    message:response.data.message,
+                                    type:'warning',
+                                    position: 'bottom-right',
+                                });
+                                this.newDialogVisible=false;
+                            }
+                        }).catch((error)=>{
+                            this.$notify({
+                                title:'错误！',
+                                message:'新建课程发生错误，请向管理员报告此错误。',
+                                type:'error',
+                                position: 'bottom-right',
+                            });
+                        })
+                    }
+                })
             },
             dialogOpenCallback(){
                 this.fetchAllCourseNature();
@@ -429,24 +361,12 @@
                 c = c.filter((cn)=>{
                     return cn.id == e
                 });
+                console.log(c);
+                console.log(c.required);
                 this.newCourserequired=c[0].required;
             },
-            pointChange(arg){
-                /*
-                    使数据更新之后再调用计算总和函数
-                    否则拿到的永远是上一次的数据
-                 */
-                this.$nextTick(()=>{
-                    let cp =this.newCourseFormData.point;
-                    this.newCourseFormData.point=(cp - cp % 0.5);
-                });
-            },
-            onInlineEditClick(index,table){
-                console.log(table[index].course);
-                this.isEdit = true;
-                this.newDialogVisible =true;
-                this.newCourseFormData = table[index].course;
-                console.log(this.newCourseFormData);
+            pointChange(point){
+                this.newCourseFormData.point=(point - point % 0.5);
             }
         }
     }

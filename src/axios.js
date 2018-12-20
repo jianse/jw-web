@@ -1,5 +1,4 @@
 import axios from 'axios'
-import router from './router'
 
 
 axios.defaults.timeout = 10000;
