@@ -26,7 +26,11 @@
             <ul style="list-style: none;padding: 0">
                 <li>
                     <div>
-                        <el-table border ref="multipleTable" :data="courseTableData" tooltip-effect="dark" style="width: 100%; margin-bottom: 10px"
+                        <el-table border ref="multipleTable"
+                                  :data="courseTableData"
+                                  v-loading="loading"
+                                  tooltip-effect="dark"
+                                  style="width: 100%; margin-bottom: 10px"
                             @selection-change="handleSelectionChange">
                             <el-table-column type="selection" width="50" align="center">
                             </el-table-column>
@@ -166,6 +170,7 @@
 
         data() {
             return {
+                loading:true,
                 isEdit:false,
                 deleteButtonDisable:true,
                 searchKeyword:'',
@@ -174,21 +179,7 @@
                     pageNum:1,
                     pageSize:10
                 },
-                courseTableData:[{
-                    course: {
-                        id: 2,
-                        couId: null,
-                        name: "计算机网络",
-                        point: 2,
-                        hour: 48
-                    },
-                    courseNature: {
-                        id: 1,
-                        name: "专业必修课",
-                        description: ".",
-                        required: true
-                    }
-                },],
+                courseTableData:[],
                 selected:[],
                 newDialogVisible:false,
                 newCourseFormData:{
@@ -211,14 +202,7 @@
                         {required:true,message:'请输入学时',trigger:'blur'}
                     ],
                 },
-                courseNatures:[
-                    {
-                        id: 1,
-                        name: "专业必修课",
-                        description: ".",
-                        required: true
-                    }
-                ],
+                courseNatures:[],
                 newCourseDialogSelectData:null,
                 newCourserequired:false,
             };
@@ -240,6 +224,7 @@
                 })
             },
             fetchCourseData(){
+                this.loading=true;
                 this.axios({
                     url:'/course/page',
                     method:'get',
@@ -251,6 +236,7 @@
                 }).then((res)=>{
                     this.courseTableData=res.data.data.list;
                     this.total = res.data.data.total;
+                    this.loading=false;
                 })
             },
             onPageChange(){
