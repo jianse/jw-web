@@ -1,8 +1,5 @@
 <template>
-
     <div>
-
-
         <el-row>
             <el-col :span="24">
                 <div class="grid-content bg-purple-dark">
@@ -64,10 +61,7 @@
                     <p>{{Email}}</p>
                 </div>
             </el-col>
-
         </el-row>
-
-
     </div>
 </template>
 
@@ -96,10 +90,11 @@
     .el-row {
         margin-bottom: 0;
 
-        &:last-child {
-            margin-bottom: 0;
-        }
+
     }
+    .el-row:last-child {
+          margin-bottom: 0;
+      }
 
     .el-col {
         border-radius: 4px;
