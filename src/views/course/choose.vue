@@ -24,6 +24,13 @@
                             <span>查找</span>
                         </el-button>
                     </el-form-item>
+                    <el-form-item>
+                        <el-button type="success" @click="fetchChooseCourseTableData">
+                            <i class="el-icon-refresh"></i>
+                            <span>刷新</span>
+                        </el-button>
+                    </el-form-item>
+
                 </el-form>
             </el-row>
         </div>
@@ -33,8 +40,10 @@
                 <span slot="label"><i class="el-icon-date"></i> 可选选课</span>
                 <div style="margin: 10px">
                     <el-table border
+                              v-loading="loading"
                               ref="multipleTable"
                               :data="chooseTableData"
+                              empty-text="暂无可选课程"
                               tooltip-effect="dark">
                         <el-table-column label="课程名称" width="150" prop="course.name">
 
@@ -51,8 +60,8 @@
                         </el-table-column>
                         <el-table-column label="操作" width="200">
                             <template slot-scope="scope">
-                                <el-button size="medium" type="primary" round @click="dialogVisible = true"><i
-                                        class="fas fa-check"></i>
+                                <el-button size="medium" type="primary" round @click="choose(scope.$index,chooseTableData)">
+                                    <i class="fas fa-check"></i>
                                     选入课程</el-button>
                             </template>
                         </el-table-column>
@@ -60,11 +69,13 @@
                 </div>
             </el-tab-pane>
             <el-tab-pane :name="tabNames[1]">
-                <span slot="label"><i></i>已选课程</span>
+                <span slot="label"><i class="far fa-calendar-check"></i> 已选课程</span>
                 <div style="margin: 10px">
                     <el-table border
+                              v-loading="loading"
                               ref="multipleTable"
                               :data="chooseTableData"
+                              empty-text="当前所选学年还未选修课程"
                               tooltip-effect="dark">
                         <el-table-column label="课程名称" width="150" prop="course.name">
 
@@ -81,7 +92,7 @@
                         </el-table-column>
                         <el-table-column label="操作" width="200">
                             <template slot-scope="scope">
-                                <el-button size="medium" type="primary" round @click="dialogVisible = true"><i
+                                <el-button size="medium" type="primary" round @click="unChoose(scope.$index,chooseTableData)"><i
                                         class="fas fa-check"></i>
                                     退选课程</el-button>
                             </template>
@@ -108,6 +119,7 @@
         name: "Role",
         data() {
             return {
+                loading:true,
                 selectDisable:true,
                 tabValue:'tab1',
                 tabNames:['tab1','tab2'],
@@ -122,6 +134,7 @@
                     keyword:'',
                     deptId:null,
                     graId :null,
+                    chose:false,
                 },
                 currentGrade:{}
             };
@@ -130,9 +143,74 @@
             this.fetchGradeSelectorData();
             this.fetchCurrentGrade();
             this.fetchChooseCourseTableData();
-
         },
         methods:{
+            mConfirm(confirmBoxConf,axiosConf,okCallback,msgConf) {
+                this.$confirm(confirmBoxConf.message,confirmBoxConf.title,{
+                    confirmButtonText:'确定',
+                    cancelButtonText:'取消',
+                    type:confirmBoxConf.type
+                }).then(()=>{
+                    this.mRemote(axiosConf,okCallback,msgConf)
+                }).catch((error)=>{
+
+                });
+            },
+            unChoose(index,tableData){
+                console.log(tableData[index]);
+                let h=this.$createElement;
+                this.mConfirm({
+                    message:h('p',null,[h('span',null,'您即将退选 '),h('span',{ style: 'color: teal' },tableData[index].course.name),h('span',null,' 是否确定？')]),
+                    title:'提醒',
+                    type:'warning'
+                },{
+                    url:'/course/choose/'+tableData[index].id,
+                    method:'delete',
+                },(res)=>{
+                    this.fetchChooseCourseTableData();
+                },{
+                    okMsg:{
+                        enable:true,
+                        title:'退选成功',
+                        message:'您的'+tableData[index].course.name +'已退选成功！'
+                    },
+                    failMsg:{
+                        enable:true,
+                        title:'退选失败',
+                        message:''
+                    },
+                    errorMsg:{
+                        enable:true,
+                        title:'退选错误',
+                        message:'退选过程中发生错误，请您刷新页面再试，或向管理员报告此事件'
+                    }
+                });
+            },
+            choose(index,tableData){
+                this.mRemote({
+                    url:'/course/choose/' +tableData[index].id,
+                    method:'put',
+
+                },(res)=>{
+                    this.fetchChooseCourseTableData();
+                },{
+                    okMsg:{
+                        enable:true,
+                        title:'成功',
+                        message:'恭喜选课成功！',
+                    },
+                    failMsg:{
+                        enable:true,
+                        title:'选课失败',
+                        message:'请检查您的选课项，或刷新页面再进行选课！',
+                    },
+                    errorMsg:{
+                        enable:true,
+                        title:'选课出错',
+                        message:'选课过程中出现错误，请联系管理员！',
+                    }
+                });
+            },
             mSubmit(ref,axiosConf,okCallback,msgConf){
                 this.$refs[ref].validate((valid)=>{
                     if(valid){
@@ -173,11 +251,9 @@
                         });
                     }
                 });
-
-
             },
-
             fetchChooseCourseTableData(){
+                this.loading = true;
                 this.mRemote({
                     url:'/course/open',
                     method:'get',
@@ -187,10 +263,12 @@
                         keyword:this.qO.keyword,
                         deptId:this.qO.deptId,
                         graId :this.qO.graId,
+                        chose:this.qO.chose
                     }
                 },(res)=>{
                     this.total =res.total;
                     this.chooseTableData = res.list;
+                    this.loading=false;
                 },{
                     okMsg:{
                         enable:false,
@@ -247,19 +325,17 @@
                 if(tab.name==this.tabNames[0]){
                     this.qO.graId=this.currentGrade.id;
                     this.selectDisable = true;
-
+                    this.qO.chose =false;
                 }else {
                     this.selectDisable = false;
+                    this.qO.chose=true;
                 }
                 this.fetchChooseCourseTableData();
             },
             onSelectChange(value){
                 this.fetchChooseCourseTableData();
-
             }
         }
-
-
     }
 </script>
 
