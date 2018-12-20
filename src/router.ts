@@ -144,20 +144,24 @@ const routers = [
   },
 ];
 
-const router = new Router({
+const routerConfig = {
   mode: 'history',
   base: process.env.BASE_URL,
   routes: routers,
-});
+};
+
+// @ts-ignore
+const router = new Router(routerConfig);
 
 router.beforeEach((to, from, next) => {
 
   const token = window.localStorage.getItem('currentUser_token');
-  if (to.matched.some((record) => record.meta.requiresAuth) && (!token || token == null)) {
+  if (to.matched.some((record) => record.meta.requiresAuth) && (!token || token === null)) {
     next({
       path: '/',
     });
   }
+  next();
 });
 
 export default router;

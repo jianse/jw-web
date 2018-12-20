@@ -6,8 +6,7 @@
                      background-color="#545c64"
                      text-color="#fff"
                      active-text-color="#ffd04b"
-                     style="padding-right: 1px"
-                        >
+                     style="padding-right: 1px">
                 <el-submenu  v-for="pmenu in menuList" :index="pmenu.id.toString()" >
                     <template slot="title">
                         <i :class="pmenu.icon"></i>{{pmenu.name}}</template>
@@ -23,7 +22,7 @@
 
         <el-container style="height: 100%">
             <el-header style="text-align: right; font-size: 12px">
-                <el-dropdown>
+                <el-dropdown @command="onDropdownClick">
                     <div>
                         <span>
                             <img alt="hi" width="22" height="22" src="../../../public/headIcon.jpeg"/>
@@ -35,10 +34,10 @@
                         <span>{{username}}</span>
                     </div>
 
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>个人信息</el-dropdown-item>
-                        <el-dropdown-item>修改密码</el-dropdown-item>
-                        <el-dropdown-item>退出登录</el-dropdown-item>
+                    <el-dropdown-menu slot="dropdown" >
+                        <el-dropdown-item :command="'info'">个人信息</el-dropdown-item>
+                        <el-dropdown-item :command="'changePass'">修改密码</el-dropdown-item>
+                        <el-dropdown-item :command="'logout'">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
 
@@ -121,6 +120,12 @@
                 this.$router.push(filterMenus[0].url);
                 this.breadcrumbData.splice(0,1,filterMenus[0]);
             },
+            onDropdownClick(command){
+                console.log(command);
+                if(command=='logout'){
+                    this.$store.dispatch('users/logout',{"router":this.$router});
+                }
+            }
         }
     };
 </script>
