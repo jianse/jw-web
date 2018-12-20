@@ -15,16 +15,17 @@
                 </el-select>
             </el-form-item>
             <el-form-item>
-                <el-cascader
-                        :props="{
-                            value:'id',
-                            label:'name',
-                            children:'department',
-                        }"
-                        expand-trigger="hover"
-                        :options="options"
-                        v-model="selectedOptions"
-                        @change="handleChange">
+                <el-cascader filterable
+                             :props="{
+                             value:'id',
+                             label:'name',
+                             children:'children',
+                             disabled:'!canChoose'
+                             }"
+                             expand-trigger="hover"
+                             :options="options"
+                             v-model="selectedOptions"
+                             @change="handleChange">
                 </el-cascader>
             </el-form-item>
             <el-form-item>
@@ -128,14 +129,7 @@
                         }
 
                     ],
-                options:[{
-                    value:'',
-                    label:'计算机学院',
-                    children:[{
-                        value:'',
-                        label:'惠普测试161'
-                    }]
-                }],
+                options:[],
                 selectedOptions:[],
                 gradeSelectorData:[],
                 selectDisable:false,
