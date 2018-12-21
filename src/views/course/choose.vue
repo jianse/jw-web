@@ -5,7 +5,7 @@
             <el-row :gutter="5">
                 <el-form :inline="true" :model="qO" class="demo-form-inline">
                     <el-form-item>
-                        <el-select :disabled="selectDisable" v-model="qO.graId"  placeholder="请选择学年" @change="onSelectChange" style="width: 100%">
+                        <el-select :disabled="selectDisable" v-model="qO.gradeId" placeholder="请选择学年" @change="onSelectChange" style="width: 100%">
                             <el-option v-for="item in gradeSelectorData"
                                        :key="item.id"
                                        :label="item.name"
@@ -133,7 +133,7 @@
                 qO:{
                     keyword:'',
                     deptId:null,
-                    graId :null,
+                    gradeId :null,
                     chose:false,
                 },
                 currentGrade:{}
@@ -262,7 +262,7 @@
                         pageSize:this.pageInfo.pageSize,
                         keyword:this.qO.keyword,
                         deptId:this.qO.deptId,
-                        graId :this.qO.graId,
+                        gradeId :this.qO.gradeId,
                         chose:this.qO.chose
                     }
                 },(res)=>{
@@ -307,7 +307,7 @@
                     method:'get'
                 },(res)=>{
                     this.currentGrade=res;
-                    this.qO.graId = res.id;
+                    this.qO.gradeId = res.id;
 
                 },{
                     okMsg:{
@@ -323,7 +323,7 @@
             },
             onSwitch(tab){
                 if(tab.name==this.tabNames[0]){
-                    this.qO.graId=this.currentGrade.id;
+                    this.qO.gradeId=this.currentGrade.id;
                     this.selectDisable = true;
                     this.qO.chose =false;
                 }else {

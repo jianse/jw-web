@@ -3,7 +3,7 @@
         <el-form :inline="true">
             <el-form-item>
                 <el-select :disabled="selectDisable"
-                           v-model="qO.graId"
+                           v-model="qO.gradeId"
                            placeholder="请选择学年"
                            @change="onSelectChange"
                            style="width: 100%">
@@ -16,11 +16,12 @@
             </el-form-item>
             <el-form-item>
                 <el-cascader filterable
+                             :change-on-select="true"
+                             :show-all-levels="false"
                              :props="{
                              value:'id',
                              label:'name',
                              children:'children',
-                             disabled:'!canChoose'
                              }"
                              expand-trigger="hover"
                              :options="options"
@@ -29,12 +30,12 @@
                 </el-cascader>
             </el-form-item>
             <el-form-item>
-                <el-input>
+                <el-input v-model="qO.keyword">
 
                 </el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary">
+                <el-button @click="fetchTableData" type="primary">
                     <i class="el-icon-search"></i>
                     查找
                 </el-button>
@@ -57,19 +58,19 @@
 
             </el-table-column>
 
-            <el-table-column prop="name" label="姓名" align="center" width="250">
+            <el-table-column prop="studentName" label="姓名" align="center" width="250">
             </el-table-column>
 
-            <el-table-column prop="gender" label="性别" align="center" width="150">
+            <el-table-column prop="studentGender" label="性别" align="center" width="150">
             </el-table-column>
 
-            <el-table-column prop="age" label="年龄" align="center" width="150">
+            <el-table-column prop="studentAge" label="年龄" align="center" width="150">
             </el-table-column>
 
             <el-table-column prop="birth" label="出生日期" align="center" width="100">
             </el-table-column>
 
-            <el-table-column prop="grade" label="入学年份">
+            <el-table-column prop="studentGrade" label="入学年份">
             </el-table-column>
             <el-table-column align="center" width="200" label="操作">
                 <template slot-scope="scope" >
@@ -96,8 +97,8 @@
             <el-pagination background
                            layout="->,prev, pager, next"
                            :current-page.sync="pageInfo.pageNum"
-                           @current-change="fetchChooseCourseTableData"
-                           :total="100" >
+                           @current-change="fetchTableData"
+                           :total="total">
             </el-pagination>
         </div>
     </div>
@@ -114,6 +115,7 @@
                     pageNum:1,
                     pageSize:10,
                 },
+                total:null,
                 studentTableData:
                     [
                         {
@@ -134,7 +136,9 @@
                 gradeSelectorData:[],
                 selectDisable:false,
                 qO:{
-                    graId:1
+                    keyword:'',
+                    gradeId:1,
+                    deptId:null,
                 },
                 loading:false,
                 currentGrade:{},
@@ -144,6 +148,7 @@
             this.fetchCurrentGrade();
             this.fetchGradeSelectorData();
             this.fetchCascaderData();
+            this.fetchTableData();
         },
         methods:{
             mConfirm(confirmBoxConf,axiosConf,okCallback,msgConf) {
@@ -198,8 +203,33 @@
                     }
                 });
             },
-            fetchChooseCourseTableData(){
-
+            fetchTableData(){
+                this.loading =true;
+                this.mRemote({
+                    url:'/student',
+                    method:'get',
+                    params:{
+                        pageNum: this.pageInfo.pageNum,
+                        pageSize: this.pageInfo.pageSize,
+                        keyword:this.qO.keyword,
+                        deptId:this.qO.deptId,
+                        gradeId:this.qO.gradeId,
+                    }
+                },(res)=>{
+                    this.studentTableData=res.list;
+                    this.total=res.total;
+                    this.loading =false;
+                },{
+                    okMsg:{
+                        enable:false
+                    },
+                    failMsg:{
+                        enable:false
+                    },
+                    errorMsg:{
+                        enable:false
+                    }
+                })
             },
             fetchGradeSelectorData(){
                 this.mRemote({
@@ -223,9 +253,15 @@
             },
             onSelectChange(){
                 //学年选择框
+                this.fetchTableData();
             },
-            handleChange(){
+            handleChange(arg){
+                //console.log(arg);
+                this.qO.deptId=arg[arg.length-1];
+                //console.log(this.qO.deptId);
+                //console.log(this.selectedOptions);
                 //部门层级选择
+                this.fetchTableData();
             },
             handleSelectionChange(selection){
                 //处理表单选中
@@ -236,7 +272,7 @@
                     method:'get'
                 },(res)=>{
                     this.currentGrade=res;
-                    this.qO.graId = res.id;
+                    this.qO.gradeId = res.id;
                 },{
                     okMsg:{
                         enable:false,
@@ -249,14 +285,13 @@
                     },
                 })
             },
-
             fetchCascaderData(){
                 this.mRemote({
                     url:'/department',
                     method:'get'
                 },(res)=>{
                     this.options=res;
-                    //this.qO.graId = res.id;
+                    //this.qO.gradeId = res.id;
                 },{
                     okMsg:{
                         enable:false,
