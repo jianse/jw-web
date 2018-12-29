@@ -42,7 +42,7 @@
                                         <el-tooltip class="item" effect="dark" content="配置角色" placement="top">
                                             <el-button size="mini"
                                                     type="info"
-                                                    @click="roleSet(scope.$index,tableData)"
+                                                    @click="onRoleSetButtonClick(scope.$index,tableData)"
                                                     circle>
                                                 <i class="fas fa-users-cog"></i>
                                             </el-button>
@@ -51,6 +51,7 @@
                                         <el-tooltip class="item" effect="dark" content="重置密码" placement="top">
                                             <el-button size="mini"
                                                        type="warning"
+                                                       @click="resetPass(scope.$index,tableData)"
                                                        circle>
                                                 <i class="fas fa-keyboard"></i>
                                             </el-button>
@@ -72,9 +73,11 @@
                     </li>
                     <li style="margin-top:12px">
                         <div>
-                            <el-pagination
-                                    layout="->,prev, pager, next,jumper"
-                                    :total="total" @current-change="refreshTable()" :current-page.sync="pageInfo.pageNum" :page-size="pageInfo.pageSize">
+                            <el-pagination background
+                                           layout="->,prev, pager, next,jumper"
+                                           :total="total" @current-change="refreshTable()"
+                                           :current-page.sync="pageInfo.pageNum"
+                                           :page-size="pageInfo.pageSize">
                             </el-pagination>
                         </div>
                     </li>
@@ -86,8 +89,7 @@
                 <el-dialog title="添加用户"
                            width="26%"
                            :visible.sync="newDialogVisible"
-                           @open="onNewDialogOpen()"
-                           @close="onNewDialogClose()"
+                           @opened="onNewDialogOpened"
                            v-if="newDialogVisible">
                     <div style="margin: 0 10px 0 0">
                         <el-form ref="newUserForm"
@@ -124,8 +126,8 @@
 
                     </div>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="newDialogCancel()">取 消</el-button>
-                        <el-button type="primary" @click="newDialogOk()">确 定</el-button>
+                        <el-button @click="newDialogCancel">取 消</el-button>
+                        <el-button type="primary" :disabled="newDialogOkButtonDisable" @click="newDialogOk">确 定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -137,9 +139,10 @@
                            :visible.sync="modifyDialogVisible"
                            @open="onModifyDialogOpen"
                            @opened="onModifyDialogOpen"
-                           @close="onModifyDialogClose"
                            v-if="modifyDialogVisible">
-                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm" :rules="modifyUserRules">
+                    <el-form ref="modifyUserForm" status-icon :model="modifyUserForm"
+                             label-width="20%"
+                             :rules="modifyUserRules">
                         <el-form-item label="用户名" prop="username">
                             <el-input v-model="modifyUserForm.username" auto-complete="off">
 
@@ -158,8 +161,8 @@
 
                             </el-input>
                         </el-form-item>
-                        <el-form-item label="电话" prop="tel">
-                            <el-input v-model="modifyUserForm.tel" auto-complete="off">
+                        <el-form-item label="电话" prop="moble">
+                            <el-input v-model="modifyUserForm.moble" auto-complete="off">
 
                             </el-input>
                         </el-form-item>
@@ -173,11 +176,20 @@
 
             <!-- 配置角色 -->
             <div>
-
                 <el-dialog title="角色配置"
+                           width="28%"
                            :visible.sync="roleConfigDialogVisible"
                            v-if="roleConfigDialogVisible">
-                    <el-table :data="roleTableData">
+                    <el-table ref="roleTable" border :data="roleTableData" @selection-change="onRoleTableSelectionChange">
+                        <el-table-column width="50" align="center">
+                            <template scope="scope">
+                                <el-radio :label="scope.row.id"
+                                          v-model="templateRadio"
+                                          >&nbsp;
+                                </el-radio>
+                            </template>
+                        </el-table-column>
+
                         <el-table-column
                                 v-for="{ align,width,type ,prop, label } in roleTableColConfigs"
                                 :type="type"
@@ -189,8 +201,8 @@
                         </el-table-column>
                     </el-table>
                     <div slot="footer" class="dialog-footer">
-                        <el-button @click="">取 消</el-button>
-                        <el-button type="primary" @click="">确 定</el-button>
+                        <el-button @click="roleConfigDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="onRoleConfigDialogOK">确 定</el-button>
                     </div>
                 </el-dialog>
             </div>
@@ -221,6 +233,7 @@
                 groupId:null,
                 /*新建modal的显示参数*/
                 newDialogVisible:false,
+                newDialogOkButtonDisable:false,
                 /*修改modal的显示参数*/
                 modifyDialogVisible:false,
                 modifyButtonDisable :true,
@@ -312,21 +325,23 @@
                 },
                 roleTableColConfigs:[
                     {
-                        type: 'selection',
-                        width: 40,
-                        align: 'center'
+                        width:80,
+                        prop:'id',
+                        label:'ID'
                     },
-                    {   width:'80',
-                        prop :'name',
+                    {   width:150,
+                        prop :'role',
                         label :'角色名称'
                     },
-                    {   width:'80',
+                    {
                         prop :'descp',
                         label :'角色描述'
                     }
 
                 ],
-                roleTableData:{},
+                roleTableData:[{
+
+                }],
                 user:{
                     username:null,
                     password:null,
@@ -334,8 +349,9 @@
                     moble: null,
                 },
                 selectedRow:[],
-
-
+                selectedRoleRow:[],
+                templateRadio:'',
+                currentRow:{},
             }
         },
         mounted(){
@@ -390,13 +406,13 @@
             },
             deleteSelected(){
                 let ids=[];
-                for(var i in this.selectedRow){
+                for(let i in this.selectedRow){
                     ids.push(this.selectedRow[i].id);
                 }
                 this.deleteConfirmed(ids);
             },
             deleteUser(index,tableData){
-                this.deleteConfirmed(tableData[index].id);
+                this.deleteConfirmed([tableData[index].id]);
             },
             tableSelectChange(selection){
                 //console.log(selection);
@@ -410,11 +426,42 @@
                     this.deleteDisable = true;
                 }
             },
-            roleSet(index,tableData){
+            onRoleSetButtonClick(index, tableData){
+                this.currentRow = tableData[index];
+                this.axios({
+                    url:'/role',
+                    method:'get'
+                }).then((res)=>{
+                    //console.log(res.data);
+                    this.roleTableData =res.data.data;
+                }).catch((error)=>{
+                    console.log(error);
+                });
+                this.axios({
+                    url:'/user/role/'+tableData[index].id,
+                    method:'get',
+
+                }).then((res)=>{
+                    let selected=res.data.data;
+                    let rows;
+                    if(selected.length){
+                        rows=this.roleTableData.filter((row)=>{
+                            let sr=selected.filter((selectedRow)=>{
+                                return selectedRow.id!=row.id;
+                            });
+                            return !sr.length;
+                        });
+                    }
+                    if (rows) {
+                        rows.forEach(row => {
+                            this.templateRadio=row.id;
+                        });
+                    }
+                }).catch((error)=>{
+                    console.log(error);
+                });
                 this.roleConfigDialogVisible =true;
-            },
-            test(){
-                //console.log(this.pageInfo.pageNum)
+
             },
             refreshTable(){
                 this.loading=true;
@@ -442,18 +489,14 @@
                 this.user.email = data.email;
                 this.user.moble = data.tel;
             },
-            onNewDialogOpen(){
-                this.$refs['newUserForm'].resetFields();
-            },
-            onNewDialogClose(){
+            onNewDialogOpened(){
                 this.$refs['newUserForm'].resetFields();
             },
             newDialogOk(){
+                this.newDialogOkButtonDisable = true;
                 this.$refs['newUserForm'].validate((valid) =>{
-                    //console.log(this.newUserForm);
                     if(valid){
                         this.initUser(this.newUserForm);
-                        //console.log(this.user);
                         this.axios({
                             url:'/user',
                             method:'post',
@@ -467,6 +510,9 @@
                                     position: 'bottom-right',
                                 });
                                 this.newDialogVisible = false;
+                                this.newDialogOkButtonDisable = false;
+                                this.refreshTable();
+                                this.$refs['newUserForm'].resetFields();
                             }else {
                                 this.$notify({
                                     title:'添加失败！',
@@ -474,21 +520,20 @@
                                     type:'warning',
                                     position: 'bottom-right',
                                 });
+                                this.newDialogOkButtonDisable = false;
                             }
                         }).catch((error)=>{
-                            //console.log(error);
                             this.$notify({
                                 title:'错误！',
                                 message:'新建用户发生错误，请向管理员报告此错误。',
                                 type:'error',
                                 position: 'bottom-right',
-                            })
+                            });
+                            this.newDialogOkButtonDisable = false;
                         });
-
                     }
-
                 });
-                this.$refs['newUserForm'].resetFields();
+                this.newDialogOkButtonDisable = false;
             },
             newDialogCancel(){
                 this.$refs['newUserForm'].resetFields();
@@ -498,14 +543,103 @@
                 this.modifyUserForm= this.selectedRow[0];
                 console.log(this.modifyUserForm);
             },
-            onModifyDialogClose(){
-
-            },
             modifyButtonClick(){
                 this.modifyDialogVisible=true;
 
-            },modifyOk(){
+            },
+            modifyOk(){
+                console.log(this.modifyUserForm);
+                this.axios({
+                    url:'/user/'+this.modifyUserForm.id,
+                    method:'put',
+                    data:this.modifyUserForm
+                }).then((response)=>{
+                    if(response.data.status==100){
+                        this.$notify({
+                            title:'修改成功！',
+                            message:'修改用户信息成功',
+                            type:'success',
+                            position: 'bottom-right',
+                        })
+                    }else{
+                        this.$notify({
+                            title:'修改失败！',
+                            message:response.data.message,
+                            type:'warning',
+                            position: 'bottom-right',
+                        })
+                    }
+                }).catch((error)=>{
+                    this.$notify({
+                        title:'错误！',
+                        message:'服务器遇到内部错误，请联系管理员解决。',
+                        type:'error',
+                        position: 'bottom-right',
+                    })
+                });
+                this.modifyDialogVisible =false;
+            },
+            resetPass(index,tableData){
+                console.log(index);
+                console.log(tableData);
+                this.$prompt('请输入密码', '重置密码', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputType:'password',
+                    inputPattern:/[\w!#$%&'*+/=?^_`{|}~-]+/,
+                    inputErrorMessage: '密码不正确'
+                }).then(({ value }) => {
+                    if(value!=null&&value!=''){
+                        this.axios({
+                            url:'/user/'+tableData[index].id,
+                            method:'put',
+                            data: {
+                                password:value,
+                            }
+                        }).then((res)=>{
+                            if(res.data.status==100){
+                                this.$notify({
+                                    title:'重置成功！',
+                                    message:'重置用户密码成功！',
+                                    type:'success',
+                                    position: 'bottom-right',
+                                });
+                            }else {
+                                this.$notify({
+                                    title:'重置失败！',
+                                    message:'重置用户密码失败！',
+                                    type:'warning',
+                                    position: 'bottom-right',
+                                });
+                            }
+                        }).catch(()=>{
+                            this.$notify({
+                                title:'错误！',
+                                message:'服务器遇到内部错误，请通知管理员解决！',
+                                type:'error',
+                                position: 'bottom-right',
+                            });
+                        });
+                    }
+                }).catch(() => {
+                    console.log('cancel');
+                });
+            },
+            onRoleConfigDialogOK(){
 
+                this.axios({
+                    url:'user/role/'+this.currentRow.id,
+                    method:'put',
+                    params:{
+                        roleId:this.templateRadio
+                    }
+                });
+                this.roleConfigDialogVisible =false;
+            },
+            onRoleTableSelectionChange(selection){
+                this.selectedRoleRow =selection.filter((row)=>{
+
+                });
             }
 
         }

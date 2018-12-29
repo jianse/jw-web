@@ -28,36 +28,22 @@
                             @selection-change="handleSelectionChange">
                             <el-table-column type="selection" width="55">
                             </el-table-column>
-                            <el-table-column label="角色名" width="160">
+                            <el-table-column label="课程名称" width="200">
                                 <template slot-scope="scope">{{ scope.row.date }}</template>
                             </el-table-column>
-                            <el-table-column prop="name" label="描述" width="400">
+                            <el-table-column prop="name" label="开课学院" width="200">
                             </el-table-column>
-                            <el-table-column label="操作" width="150">
+                            <el-table-column label="学分" width="150">
+                            </el-table-column>
+                            <el-table-column label="学时" width="150">
+                            </el-table-column>
+                            <el-table-column label="课程性质" width="200">
                                 <template slot-scope="scope">
-                                    <el-button size="medium" type="info" round @click="dialogVisible = true"><i class="fas fa-tasks"></i>
-                                        权限配置</el-button>
-                                    <el-dialog title="提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
-                                        <span>
-                                            <template>
-                                                <el-table :data="tableData" style="width: 100%">
-                                                    <el-table-column prop="name" label="权限" width="180">
-                                                    </el-table-column>
-                                                    <el-table-column prop="name" label="操作" width="180">
-                                                        <el-switch v-model="value2" active-color="#13ce66"
-                                                            inactive-color="#ff4949">
-                                                        </el-switch>
-                                                    </el-table-column>
-
-                                                </el-table>
-                                            </template>
-                                        </span>
-                                        <span slot="footer" class="dialog-footer">
-                                            <el-button @click="dialogVisible = false">取 消</el-button>
-                                            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-                                        </span>
-                                    </el-dialog>
+                                    <el-radio v-model="tableData3.radio" label="1">必修</el-radio>
+                                    <el-radio v-model="tableData3.radio" label="2">非必修</el-radio>
                                 </template>
+                            </el-table-column>
+                            <el-table-column label="课程性质描述" width="300">
                             </el-table-column>
                         </el-table>
                     </div>
@@ -69,7 +55,6 @@
                         </el-pagination>
                     </div>
                 </li>
-
             </ul>
         </div>
     </div>
@@ -85,49 +70,30 @@
                 tableData3: [{
                     date: '2016-05-03',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-02',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-04',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-01',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-08',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-06',
                     name: '王小虎',
-                    address: '1518'
                 }, {
                     date: '2016-05-07',
                     name: '王小虎',
-                    address: '1518'
                 }],
                 multipleSelection: [],
-                dialogVisible: false,
-
-
-
             };
 
         },
-        methods: {
-            handleClose(done) {
-                this.$confirm('确认关闭？')
-                    .then(_ => {
-                        done();
-                    })
-                    .catch(_ => {});
-            }
-        }
+
     }
 </script>
 
