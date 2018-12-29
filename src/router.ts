@@ -133,11 +133,11 @@ const routers = [
         },
       },
       {
-        path: 'searcht',
-        name: 'searcht',
-        component: () => import('./views/teacher/searcht.vue'),
+        path: 'teachers',
+        name: 'teachers',
+        component: () => import('./views/teacher/teachers.vue'),
         meta: {
-          title: 'searcht',
+          title: '教师信息',
         },
       },
       {

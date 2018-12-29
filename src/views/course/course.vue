@@ -72,6 +72,16 @@
                                             <i class="fas fa-edit"></i>
                                         </el-button>
                                     </el-tooltip>
+
+                                    <el-tooltip class="item" effect="dark" content="开课" placement="top">
+                                        <el-button size="mini"
+                                                   type="warning"
+                                                   @click="onInlineOpenClick(scope.$index,courseTableData)"
+                                                   circle>
+                                            <i class="far fa-hand-pointer"></i>
+                                        </el-button>
+                                    </el-tooltip>
+
                                     <el-tooltip class="item" effect="dark" content="删除" placement="top">
                                         <el-button size="mini"
                                                    type="danger"
@@ -182,13 +192,13 @@
                 courseTableData:[],
                 selected:[],
                 newDialogVisible:false,
-                newCourseFormData:{
+                newFormData:{
                     name:'',
                     couId:null,
                     point:1,
                     hour:null,
                 },
-                newCourseFormRoles:{
+                newFormRoles:{
                     name:[
                         {required:true,message:'请输入课程名',trigger :'blur'},
                     ],
@@ -355,9 +365,9 @@
             onNewCourseDialogOk(){
                 if(this.isEdit){
                     this.mSubmit('newCourseForm',{
-                        url:'/course/'+ this.newCourseFormData.id,
+                        url:'/course/'+ this.newFormData.id,
                         method:'put',
-                        data:this.newCourseFormData
+                        data:this.newFormData
                     },
                         (res)=>{
                             this.isEdit= false;
@@ -387,7 +397,7 @@
                             this.axios({
                                 url:'/course',
                                 method:'post',
-                                data:this.newCourseFormData,
+                                data:this.newFormData,
                             }).then((res)=>{
                                 if(res.data.status==100){
                                     this.$notify({
@@ -437,8 +447,8 @@
                     否则拿到的永远是上一次的数据
                  */
                 this.$nextTick(()=>{
-                    let cp =this.newCourseFormData.point;
-                    this.newCourseFormData.point=(cp - cp % 0.5);
+                    let cp =this.newFormData.point;
+                    this.newFormData.point=(cp - cp % 0.5);
                 });
             },
             onInlineEditClick(index,table){
@@ -446,7 +456,32 @@
                 this.isEdit = true;
                 this.newDialogVisible =true;
                 this.newCourseFormData = table[index].course;
-                console.log(this.newCourseFormData);
+                console.log(this.newFormData);
+            },
+            onInlineOpenClick(index,tableData){
+                this.mRemote({
+                    url:'/course/open',
+                    method:'post',
+                    data:{},
+                },(res)=>{
+
+                },{
+                    okMsg: {
+                        enable:true,
+                        title:'成功',
+                        message:'开课成功',
+                    },
+                    failMsg: {
+                        enable:true,
+                        title:'失败',
+                        message:'开课失败',
+                    },
+                    errorMsg: {
+                        enable:true,
+                        title:'出错了！',
+                        message:'操作过程中出现错误，请与管理员联系',
+                    },
+                });
             }
         }
     }
