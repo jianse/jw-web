@@ -262,7 +262,7 @@
                         pageSize:this.pageInfo.pageSize,
                         keyword:this.qO.keyword,
                         deptId:this.qO.deptId,
-                        gradeId :this.qO.gradeId,
+                        graId :this.qO.gradeId,
                         chose:this.qO.chose
                     }
                 },(res)=>{
