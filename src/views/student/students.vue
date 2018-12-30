@@ -40,6 +40,12 @@
                     查找
                 </el-button>
             </el-form-item>
+            <el-form-item>
+                <el-button @click="onNewClick" type="success">
+                    <i class="el-icon-plus"></i>
+                    新建
+                </el-button>
+            </el-form-item>
         </el-form>
         <el-table border ref="multipleTable"
                   :data="studentTableData"
@@ -77,7 +83,7 @@
                     <el-tooltip class="item" effect="dark" content="修改" placement="top">
                         <el-button size="mini"
                                    type="success"
-                                   @click="onInlineEditClick(scope.$index,courseTableData)"
+                                   @click="onInlineEditClick(scope.$index,studentTableData)"
                                    circle>
                             <i class="fas fa-edit"></i>
                         </el-button>
@@ -86,7 +92,7 @@
                         <el-button size="mini"
                                    type="danger"
                                    icon="el-icon-delete"
-                                   @click="onInlineDeleteClick(scope.$index,courseTableData)"
+                                   @click="onInlineDeleteClick(scope.$index,studentTableData)"
                                    circle>
                         </el-button>
                     </el-tooltip>
@@ -101,6 +107,93 @@
                            :total="total">
             </el-pagination>
         </div>
+
+        <div>
+            <el-dialog :title="isEdit?'修改学生信息':'添加学生'"
+                       width="26%"
+                       :visible.sync="DialogVisible"
+                       @open="dialogOpenCallback"
+                       @close="dialogCloseCallback"
+                       v-if="DialogVisible">
+                <div>
+                    <el-form ref="Form"
+                             label-width="20%"
+                             status-icon
+                             :model="FormData"
+                             :rules="FormRules" style="margin:0 ;padding-bottom: 0">
+                        <el-form-item label="学号" prop="no">
+                            <el-input :disabled="isEdit" v-model="FormData.no" type="text" >
+
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="姓名" prop="studentName">
+                            <el-input v-model="FormData.studentName" type="text" >
+
+                            </el-input>
+                        </el-form-item>
+
+                        <el-form-item label="年龄" prop="studentAge">
+                            <el-input-number v-model="FormData.studentAge"
+                                             :step="1"
+                                             :precision="0"
+                                             :max="100"
+                                             :min="1"
+                                             style="width:100%">
+
+                            </el-input-number>
+                        </el-form-item>
+
+
+                        <el-form-item label="性别" prop="studentGender">
+                            <el-select v-model="FormData.studentGender"
+                                       placeholder="请选择"
+                                       style="width: 100%">
+                                <el-option :value="'男'"
+                                           :label="'男'">
+
+                                </el-option>
+                                <el-option :value="'女'"
+                                           :label="'女'">
+
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <el-form-item label="入学年" prop="gradeId">
+                            <el-select v-model="FormData.gradeId">
+                                <el-option v-for="item in gradeSelectorData" :value="item.id" :label="item.name">
+
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <el-form-item label="班级" prop="depSelected">
+                            <el-cascader filterable
+                                         :change-on-select="true"
+                                         :show-all-levels="false"
+                                         :props="{
+                                value:'id',
+                                label:'name',
+                                children:'children',
+                                }"
+                                         expand-trigger="hover"
+                                         :options="options"
+                                         v-model="FormData.depSelected"
+                                         @change="onCascaderChange"
+                                         style="width: 100%">
+                            </el-cascader>
+                        </el-form-item>
+
+                    </el-form>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="()=>{DialogVisible=false;this.FormData={};}">取 消</el-button>
+                    <el-button type="primary" @click="onDialogOk" >确 定</el-button>
+                </div>
+
+            </el-dialog>
+        </div>
+
     </div>
 
 </template>
@@ -109,8 +202,19 @@
     export default {
         name: "Students",
         data(){
-
             return {
+                isEdit:false,
+                FormData:{},
+                FormRules:{
+                    no:[
+                        {required:true,message:'请输入学号',trigger:'blur'}
+                    ],
+                    studentName:[
+                        {required:true,message:'请输入姓名',trigger:'blur'}
+                    ],
+
+                },
+                DialogVisible:false,
                 pageInfo:{
                     pageNum:1,
                     pageSize:10,
@@ -151,6 +255,47 @@
             this.fetchTableData();
         },
         methods:{
+            onInlineDeleteClick(index,table){
+                this.$confirm('此操作将永久删除该学生，是否继续?','警告',{
+                    confirmButtonText:'确定',
+                    cancelButtonText:'取消',
+                    type:'warning'
+                }).then(()=>{
+                    this.mRemote({
+                        url:'/student/'+table[index].id,
+                        method:'delete',
+                    },(res)=>{
+
+                    },{
+                        okMsg:{
+                            enable:true,
+                            title:'成功'
+                            ,message:'',
+                        },
+                        failMsg:{
+                            enable:true,
+                            title:'失败'
+                            ,message:'',
+                        },
+                        errorMsg:{
+                            enable:true,
+                            title:'错误'
+                            ,message:'',
+                        },
+                    })
+                })
+            },
+
+            dialogCloseCallback(){
+                this.FormData={};
+                this.$refs['Form'].resetFields();
+            },
+            onInlineEditClick(index,table){
+                console.log(table[index]);
+                this.isEdit = true;
+                this.DialogVisible =true;
+                this.FormData = table[index];
+            },
             mConfirm(confirmBoxConf,axiosConf,okCallback,msgConf) {
                 this.$confirm(confirmBoxConf.message,confirmBoxConf.title,{
                     confirmButtonText:'确定',
@@ -304,7 +449,83 @@
                     },
                 })
             },
-
+            dialogOpenCallback(){
+                if(!this.isEdit){
+                    this.$refs['Form'].resetFields();
+                }
+            },
+            onCascaderChange(arg){
+                this.FormData.classId=arg[arg.length-1];
+            },
+            editOk(){
+                this.$refs['Form'].validate((valid)=>{
+                    if(valid){
+                        console.log('edit ok');
+                        //this.mRemote();
+                        this.mRemote({
+                            url:'/student/'+this.FormData.id,
+                            method:'put',
+                            data:this.FormData,
+                        },(res)=>{
+                            this.DialogVisible=false;
+                        },{
+                            okMsg:{
+                                enable:true,
+                                title:'成功',
+                                message:'',
+                            },
+                            failMsg:{
+                                enable:true,
+                                title:'失败',
+                                message:'',
+                            },
+                            errorMsg:{
+                                enable:true,
+                                title:'错误',
+                                message:'',
+                            }
+                        })
+                    }
+                })
+            },
+            createOk(){
+                this.$refs['Form'].validate((valid)=>{
+                    if(valid){
+                        console.log('create ok');
+                        //this.mRemote();
+                        this.mRemote({
+                            url:'/student',
+                            method:'post',
+                            data:this.FormData,
+                        },(res)=>{
+                            this.DialogVisible=false;
+                        },{
+                            okMsg:{
+                                enable:true,
+                                title:'成功',
+                                message:'',
+                            },
+                            failMsg:{
+                                enable:true,
+                                title:'失败',
+                                message:'',
+                            },
+                            errorMsg:{
+                                enable:true,
+                                title:'错误',
+                                message:'',
+                            }
+                        })
+                    }
+                })
+            },
+            onDialogOk(){
+                this.isEdit?this.editOk():this.createOk();
+            },
+            onNewClick(){
+                this.isEdit=false;
+                this.DialogVisible=true;
+            }
         }
     }
 </script>
