@@ -1,25 +1,32 @@
 <template>
-    <el-row type="flex" justify="center" align="middle">
-        <el-col :span="4" :lg="4" :xl="4" :sm="10">
-            <el-card class="box-card">
-                <el-form ref="formLogin" status-icon :model="formLogin" :rules="rules">
-                    <el-form-item label="用户名" prop="username">
-                        <el-input v-model="formLogin.username">
+    <div style="height: 100%" class="back" :style="back"
+        >
+        <el-row type="flex" justify="center" align="middle" style="padding-top: 260px;background-color: transparent" >
+            <el-col :span="4" :lg="4" :xl="4" :sm="10">
+                <el-card shadow="hover" class="box-card" >
+                    <div slot="header" class="clearfix">
+                        <span>登录</span>
+                    </div>
+                    <el-form ref="formLogin" status-icon :model="formLogin" :rules="rules" label-width="25%" style="margin-right: 10px">
+                        <el-form-item label="用户名" prop="username">
+                            <el-input v-model="formLogin.username">
 
-                        </el-input>
-                    </el-form-item>
-                    <el-form-item label="密码" prop="password">
-                        <el-input type="password" v-model="formLogin.password">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="密码" prop="password">
+                            <el-input type="password" v-model="formLogin.password">
 
-                        </el-input>
-                    </el-form-item>
-                    <el-form-item align="right">
-                        <el-button type="primary" @click="login('formLogin')">立即登录</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-card>
-        </el-col>
-    </el-row>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item align="right">
+                            <el-button type="primary" @click="login('formLogin')">立即登录</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+
 
 </template>
 
@@ -28,6 +35,11 @@ export default {
     name: 'LoginForm',
     data() {
         return {
+            back:{
+              backgroundImage: 'url('+require('../../public/login_back.jpg')+')',
+              backgroundRepeat: "no-repeat",
+              backgroundSize: " auto",
+            },
             code: null,
             formLogin: {
                 username: null,
