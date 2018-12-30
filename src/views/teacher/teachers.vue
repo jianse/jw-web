@@ -179,7 +179,7 @@
                     </el-form>
                 </div>
                 <div slot="footer" class="dialog-footer">
-                    <el-button >取 消</el-button>
+                    <el-button @click="newDialogVisible=false">取 消</el-button>
                     <el-button type="primary" @click="onNewDialogOk" >确 定</el-button>
                 </div>
 
@@ -423,7 +423,7 @@
                         method:'post',
                         data:this.newFormData,
                     },(res)=>{
-
+                        this.newDialogVisible=false;
                     },{
                     okMsg:{
                         enable:true,
