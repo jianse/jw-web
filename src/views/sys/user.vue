@@ -533,7 +533,7 @@
                         });
                     }
                 });
-                this.newDialogOkButtonDisable = false;
+                //this.newDialogOkButtonDisable = false;
             },
             newDialogCancel(){
                 this.$refs['newUserForm'].resetFields();

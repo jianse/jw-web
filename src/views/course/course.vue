@@ -112,7 +112,7 @@
             </ul>
         </div>
         <div>
-            <el-dialog title="添加课程"
+            <el-dialog :title="isEdit?'添加课程':'修改教师'"
                        width="26%"
                        :visible.sync="newDialogVisible"
                        @open="dialogOpenCallback"
