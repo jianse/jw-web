@@ -33,6 +33,7 @@
                                   style="width: 100%; margin-bottom: 10px"
                             @selection-change="handleSelectionChange">
                             <el-table-column type="selection" width="50" align="center">
+
                             </el-table-column>
 
                             <el-table-column sortable label="课程编号" width="110" align="center" prop="course.id">
@@ -121,7 +122,7 @@
                              label-width="20%"
                              status-icon
                              :model="newCourseFormData"
-                             :rules="newCourseFormRoles" style="margin:0 ;padding-bottom: 0">
+                             :rules="newCourseFormRules" style="margin:0 ;padding-bottom: 0">
                         <el-form-item label="课程名" prop="name">
                             <el-input v-model="newCourseFormData.name" type="text" >
 
@@ -156,7 +157,7 @@
 
                                 </el-option>
                             </el-select>
-                            <el-checkbox disabled label="必修" v-model="newCourserequired">
+                            <el-checkbox disabled label="必修" v-model="newCourseRequired">
 
                             </el-checkbox>
                         </el-form-item>
@@ -164,10 +165,83 @@
                     </el-form>
                 </div>
                 <div slot="footer" class="dialog-footer">
-                    <el-button >取 消</el-button>
+                    <el-button @click="newDialogVisible=false">取 消</el-button>
                     <el-button type="primary" @click="onNewCourseDialogOk" >确 定</el-button>
                 </div>
 
+            </el-dialog>
+        </div>
+
+        <div>
+            <el-dialog title="新开课程"
+                       width="26%"
+                       :visible.sync="openCourseDialogVisible"
+                       @close="ocCloseCallback"
+                       v-if="openCourseDialogVisible">
+                <div>
+                    <el-form ref="openCourseForm"
+                             label-width="20%"
+                             status-icon
+                             :model="openCourseFormData"
+                             :rules="openCourseFormRules" style="margin:0 ;padding-bottom: 0">
+
+                        <el-form-item label="课程名" prop="couId">
+                            <el-select disabled v-model="openCourseFormData.couId" style="width: 100%">
+                                <el-option v-for="item in courseTableData" :value="item.course.id" :label="item.course.name">
+
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <el-form-item label="开课学院" prop="depSelected">
+                            <el-cascader filterable
+                                         :change-on-select="true"
+                                         :show-all-levels="false"
+                                         :props="{
+                                value:'id',
+                                label:'name',
+                                children:'children',
+                                }"
+                                         expand-trigger="hover"
+                                         :options="options"
+                                         v-model="openCourseFormData.depSelected"
+                                         @change="onCascaderChange"
+                                         style="width: 100%">
+                            </el-cascader>
+                        </el-form-item>
+
+                        <el-form-item label="开课学年" prop="graId">
+                            <el-select v-model="openCourseFormData.graId" style="width: 100%;">
+                                <el-option v-for="item in gradeOptions" :value="item.id" :label="item.name">
+
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <el-form-item label="分配教师" prop="teaId">
+                            <el-select v-model="openCourseFormData.teaId" style="width: 100%;">
+                                <el-option v-for="item in teacherSelectData" :value="item.id" :label="item.name" >
+
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+
+                        <el-form-item label="班级容量" prop="sits">
+                            <el-input-number v-model="openCourseFormData.sits"
+                                             :step="10"
+                                             :precision="0"
+                                             :max="200"
+                                             :min="5" style="width:100%">
+
+                            </el-input-number>
+                        </el-form-item>
+                    </el-form>
+
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="openCourseDialogVisible=false">取 消</el-button>
+                    <el-button type="primary" @click="onOpenOkClick" >确 定</el-button>
+                </div>
             </el-dialog>
         </div>
     </div>
@@ -176,10 +250,35 @@
 </template>
 <script>
     export default {
-        name: "Role",
+        name: "Course",
 
         data() {
             return {
+                options:[],
+                gradeOptions:[],
+                openCourseDialogVisible:false,
+                openCourseFormData:{
+                    depId:null,
+                    graId: null,
+                    couId:null,
+                    sits:80,
+                    teaId:null,
+                },
+                openCourseFormRules:{
+                    graId: [
+                        {required:true,message:'请选择开课学年！',trigger:'blur'}
+                    ],
+                    sits:[
+                        {required:true,message:'请填写班级容量!',trigger:'blur'}
+                    ],
+                    teaId:[
+                        {required:true,message:'请选择教师！',trigger:'blur'}
+                    ],
+                    depSelected:[
+                        {required: true,message:'请选择学院！',trigger:'blur',type:'array'},
+                    ]
+                },
+                currentGrade:{},
                 loading:true,
                 isEdit:false,
                 deleteButtonDisable:true,
@@ -192,13 +291,13 @@
                 courseTableData:[],
                 selected:[],
                 newDialogVisible:false,
-                newFormData:{
+                newCourseFormData:{
                     name:'',
                     couId:null,
                     point:1,
                     hour:null,
                 },
-                newFormRoles:{
+                newCourseFormRules:{
                     name:[
                         {required:true,message:'请输入课程名',trigger :'blur'},
                     ],
@@ -214,14 +313,107 @@
                 },
                 courseNatures:[],
                 newCourseDialogSelectData:null,
-                newCourserequired:false,
+                newCourseRequired:false,
+                teacherSelectData:[],
             };
         },
         mounted(){
+            this.fetchCurrentGrade();
             this.fetchCourseData();
             this.fetchAllCourseNature();
+            this.fetchTeacherData();
+            this.fetchGradeSelectorData();
+            this.fetchCascaderData();
         },
         methods:{
+            fetchCascaderData(){
+                this.mRemote({
+                    url:'/department',
+                    method:'get'
+                },(res)=>{
+                    this.options=res;
+                    //this.qO.gradeId = res.id;
+                },{
+                    okMsg:{
+                        enable:false,
+                    },
+                    failMsg:{
+                        enable:false,
+                    },
+                    errorMsg:{
+                        enable:false,
+                    },
+                })
+            },
+            fetchTeacherData(){
+                this.loading =true;
+                this.mRemote({
+                    url:'/teacher',
+                    method:'get',
+                    params: {
+                        keyword:null,
+                        deptId:null,
+                        pageNum:1,
+                        pageSize:100
+                    }
+                },(res)=>{
+                     //console.log(res);
+                    this.teacherSelectData=res.list;
+
+                },{
+                    okMsg:{
+                        enable:false
+                    },
+                    failMsg:{
+                        enable:false
+                    },
+                    errorMsg:{
+                        enable:false
+                    }
+                });
+            },
+            fetchGradeSelectorData(){
+                this.mRemote({
+                    url:'/grade',
+                    method:'get',
+                },(res)=>{
+                    console.log(res);
+                    this.gradeOptions=res;
+                    //console.log(this.gradeSelectorData);
+                },{
+                    okMsg:{
+                        enable:false
+                    },
+                    failMsg:{
+                        enable:false
+                    },
+                    errorMsg:{
+                        enable:false
+                    }
+                })
+            },
+            ocCloseCallback(){
+                this.$refs['openCourseForm'].resetFields();
+            },
+            fetchCurrentGrade(){
+                this.mRemote({
+                    url:'/grade/current',
+                    method:'get'
+                },(res)=>{
+                    this.currentGrade=res;
+                    //this.qO.gradeId = res.id;
+                },{
+                    okMsg:{
+                        enable:false,
+                    },
+                    failMsg:{
+                        enable:false,
+                    },
+                    errorMsg:{
+                        enable:false,
+                    },
+                })
+            },
             fetchAllCourseNature() {
                 this.axios({
                     url: '/course/nature',
@@ -255,11 +447,7 @@
             },
             handleSelectionChange(selection){
                 this.selected=selection;
-                if(selection.length>0){
-                    this.deleteButtonDisable = false;
-                }else {
-                    this.deleteButtonDisable = true;
-                }
+                this.deleteButtonDisable = selection.length <= 0;
             },
             mSubmit(ref,axiosConf,okCallback,msgConf){
                 this.$refs[ref].validate((valid)=>{
@@ -439,7 +627,7 @@
                 c = c.filter((cn)=>{
                     return cn.id == e
                 });
-                this.newCourserequired=c[0].required;
+                this.newCourseRequired=c[0].required;
             },
             pointChange(arg){
                 /*
@@ -459,29 +647,42 @@
                 console.log(this.newFormData);
             },
             onInlineOpenClick(index,tableData){
-                this.mRemote({
-                    url:'/course/open',
-                    method:'post',
-                    data:{},
-                },(res)=>{
+                this.openCourseFormData.couId=tableData[index].course.id;
+                this.openCourseDialogVisible=true;
+            },
+            onOpenOkClick(){
+                this.$refs['openCourseForm'].validate((valid)=>{
+                    if(valid){
+                        //console.log(this.currentGrade);
+                        //console.log(tableData[index]);
+                        this.mRemote({
+                            url:'/course/open',
+                            method:'post',
+                            data:this.openCourseFormData,
+                        },(res)=>{
 
-                },{
-                    okMsg: {
-                        enable:true,
-                        title:'成功',
-                        message:'开课成功',
-                    },
-                    failMsg: {
-                        enable:true,
-                        title:'失败',
-                        message:'开课失败',
-                    },
-                    errorMsg: {
-                        enable:true,
-                        title:'出错了！',
-                        message:'操作过程中出现错误，请与管理员联系',
-                    },
+                        },{
+                            okMsg: {
+                                enable:true,
+                                title:'成功',
+                                message:'开课成功',
+                            },
+                            failMsg: {
+                                enable:true,
+                                title:'失败',
+                                message:'开课失败',
+                            },
+                            errorMsg: {
+                                enable:true,
+                                title:'出错了！',
+                                message:'操作过程中出现错误，请与管理员联系',
+                            },
+                        });
+                    }
                 });
+            },
+            onCascaderChange(arg){
+                this.openCourseFormData.depId=arg[arg.length-1];
             }
         }
     }
