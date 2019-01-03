@@ -60,7 +60,19 @@ export default {
             this.$refs[formLogin].validate((valid) => {
                  if (valid) {
                      // console.log(this);
-                     this.$store.dispatch('users/userLogin', {user_name: this.formLogin.username, user_password: this.formLogin.password, router: this.$router});
+                     var message= this.$store.dispatch('users/userLogin', {user_name: this.formLogin.username, user_password: this.formLogin.password, router: this.$router});
+                     console.log(message);
+                     message.catch((e)=>{
+                       console.log(e);
+                     });
+                     if(message=='登录失败！'){
+                        this.$message({
+                         showClose: true,
+                         message: '登录失败，请检查您的用户名或密码！',
+                         type: 'error'
+                        });
+                     }
+
                  }
              });
         },

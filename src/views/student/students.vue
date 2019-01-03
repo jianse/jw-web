@@ -121,7 +121,7 @@
                              status-icon
                              :model="FormData"
                              :rules="FormRules" style="margin:0 ;padding-bottom: 0">
-                        <el-form-item label="学号" prop="no">
+                        <el-form-item label="学号" :prop="isEdit?'':'no'">
                             <el-input :disabled="isEdit" v-model="FormData.no" type="text" >
 
                             </el-input>
@@ -160,7 +160,7 @@
                         </el-form-item>
 
                         <el-form-item label="入学年" prop="gradeId">
-                            <el-select v-model="FormData.gradeId">
+                            <el-select v-model="FormData.gradeId" style="width: 100%">
                                 <el-option v-for="item in gradeSelectorData" :value="item.id" :label="item.name">
 
                                 </el-option>
@@ -202,12 +202,28 @@
     export default {
         name: "Students",
         data(){
+            let validSNO=(rule,value,callback)=>{
+                this.axios({
+                    url:'/student/exist',
+                    method:'post',
+                    data:value
+                }).then((res)=>{
+                    if(res.data.data){
+                        callback(new Error("该学号已存在，请检查后再试！"));
+                    }else{
+                        callback();
+                    }
+                }).catch((error)=>{
+                    callback(new Error("系统或网络错误，请检查您的网络连接！"));
+                })
+            };
             return {
                 isEdit:false,
                 FormData:{},
                 FormRules:{
                     no:[
-                        {required:true,message:'请输入学号',trigger:'blur'}
+                        {required:true,message:'请输入学号',trigger:'blur'},
+                        {validator:validSNO,trigger:'blur'}
                     ],
                     studentName:[
                         {required:true,message:'请输入姓名',trigger:'blur'}
@@ -285,7 +301,6 @@
                     })
                 })
             },
-
             dialogCloseCallback(){
                 this.FormData={};
                 this.$refs['Form'].resetFields();

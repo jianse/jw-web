@@ -214,12 +214,29 @@
     export default {
         name: "User",
         data() {
-            var confPass = (rule,value,callback)=>{
-                if(value === ''){
+            let validUsername=(rule,value,callback)=>{
+                this.axios({
+                    url:'/user/exist',
+                    method:'post',
+                    data:value
+                }).then((res)=>{
+                    if(res.data.data){
+                        console.log(res);
+                        callback(new Error("该用户名已经存在！"));
+                    }else {
+                        callback();
+                    }
+                }).catch((error)=>{
+                    callback(new Error("服务异常！"));
+                    console.log(error);
+                });
+            };
+            let confPass = (rule, value, callback) => {
+                if (value === '') {
                     callback(new Error('请再次输入密码'));
-                }else if(value !== this.newUserForm.password){
+                } else if (value !== this.newUserForm.password) {
                     callback(new Error('两次输入的密码不一致！'));
-                }else {
+                } else {
                     callback();
                 }
             };
@@ -306,7 +323,7 @@
                 newUserRules:{
                     username:[
                         {required:true,message:'请填写用户名',trigger:'blur'},
-
+                        {validator:validUsername,trigger:'blur'},
                     ],
                     password:[
                         {required:true,message:'请填写密码',trigger:'blur'},

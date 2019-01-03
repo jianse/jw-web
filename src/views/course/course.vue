@@ -10,7 +10,7 @@
                         <i class="el-icon-search"></i>
                         <span>查找</span>
                     </el-button>
-                    <el-button type="primary" @click="newDialogVisible=true">
+                    <el-button type="primary" @click="()=>{newDialogVisible=true;isEdit=false;}">
                         <i class="el-icon-plus"></i>
                         新建
                     </el-button>
@@ -112,10 +112,11 @@
             </ul>
         </div>
         <div>
-            <el-dialog :title="isEdit?'添加课程':'修改教师'"
+            <el-dialog :title="isEdit?'修改课程':'添加课程'"
                        width="26%"
                        :visible.sync="newDialogVisible"
                        @open="dialogOpenCallback"
+                       @close="dialogCloseCallback"
                        v-if="newDialogVisible">
                 <div>
                     <el-form ref="newCourseForm"
@@ -318,6 +319,7 @@
             };
         },
         mounted(){
+            this.fetchAllCourseNature();
             this.fetchCurrentGrade();
             this.fetchCourseData();
             this.fetchAllCourseNature();
@@ -534,12 +536,7 @@
                     });
                     this.refreshTable();
                 }).catch((error)=>{
-                    this.$notify({
-                        title:'取消删除！',
-                        message:'已取消删除',
-                        type:'info',
-                        position: 'bottom-right',
-                    });
+
                 });
             },
             onDeleteClick(){
@@ -550,77 +547,87 @@
                 this.deleteConfirmed(ids);
                 this.fetchCourseData();
             },
-            onNewCourseDialogOk(){
-                if(this.isEdit){
-                    this.mSubmit('newCourseForm',{
-                        url:'/course/'+ this.newFormData.id,
+            editOk(){
+                this.mSubmit('newCourseForm',{
+                        url:'/course/'+ this.newCourseFormData.id,
                         method:'put',
-                        data:this.newFormData
+                        data:this.newCourseFormData
                     },
-                        (res)=>{
-                            this.isEdit= false;
-                            this.newDialogVisible = false;
-                            this.fetchCourseData();
-                        },{
-                            okMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            },
-                            failMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            },
-                            errorMsg:{
-                                enable:true,
-                                title:'',
-                                message:''
-                            }
-                        });
-
-                }else {
-                    this.$refs['newCourseForm'].validate((valid)=>{
-                        if(valid){
-                            this.axios({
-                                url:'/course',
-                                method:'post',
-                                data:this.newFormData,
-                            }).then((res)=>{
-                                if(res.data.status==100){
-                                    this.$notify({
-                                        title:'添加成功！',
-                                        message:'添加课程成功',
-                                        type:'success',
-                                        position: 'bottom-right',
-                                    });
-                                    this.newDialogVisible=false;
-                                    this.fetchCourseData();
-                                    this.$refs['newCourseForm'].resetFields();
-                                }else {
-                                    this.$notify({
-                                        title:'添加失败！',
-                                        message:response.data.message,
-                                        type:'warning',
-                                        position: 'bottom-right',
-                                    });
-                                    this.newDialogVisible=false;
-                                }
-                            }).catch((error)=>{
-                                this.$notify({
-                                    title:'错误！',
-                                    message:'新建课程发生错误，请向管理员报告此错误。',
-                                    type:'error',
-                                    position: 'bottom-right',
-                                });
-                            })
+                    (res)=>{
+                        this.isEdit= false;
+                        this.newDialogVisible = false;
+                        this.fetchCourseData();
+                    },{
+                        okMsg:{
+                            enable:true,
+                            title:'成功',
+                            message:'修改成功！'
+                        },
+                        failMsg:{
+                            enable:true,
+                            title:'失败',
+                            message:'修改失败 请检查您的内容后再试。'
+                        },
+                        errorMsg:{
+                            enable:true,
+                            title:'错误',
+                            message:'修改过程中发生错误，请与管理员联系解决'
                         }
                     });
-                }
+            },
+            newOk(){
+                this.axios({
+                    url:'/course',
+                    method:'post',
+                    data:this.newCourseFormData,
+                }).then((res)=>{
+                    if(res.data.status==100){
+                        this.$notify({
+                            title:'添加成功！',
+                            message:'添加课程成功',
+                            type:'success',
+                            position: 'bottom-right',
+                        });
+                        this.newDialogVisible=false;
+                        this.fetchCourseData();
+                        this.$refs['newCourseForm'].resetFields();
+                    }else {
+                        this.$notify({
+                            title:'添加失败！',
+                            message:response.data.message,
+                            type:'warning',
+                            position: 'bottom-right',
+                        });
+                        this.newDialogVisible=false;
+                    }
+                }).catch((error)=>{
+                    this.$notify({
+                        title:'错误！',
+                        message:'新建课程发生错误，请向管理员报告此错误。',
+                        type:'error',
+                        position: 'bottom-right',
+                    });
+                })
+            },
+            onNewCourseDialogOk(){
+                this.$refs['newCourseForm'].validate((valid)=>{
+                    if(valid){
+                        if(this.isEdit){
+                            this.editOk();
+                        }else {
+                            this.newOk();
+                        }
+                    }
+                });
 
             },
+            dialogCloseCallback(){
+                this.newCourseFormData={};
+            },
             dialogOpenCallback(){
-                this.fetchAllCourseNature();
+                if(!this.isEdit){
+                    this.newCourseFormData={};
+                }
             },
             newCourseFormSelectChange(e){
                 let c =this.courseNatures;
@@ -661,6 +668,8 @@
                             data:this.openCourseFormData,
                         },(res)=>{
 
+                            this.openCourseDialogVisible=false;
+                            this.fetchCourseData();
                         },{
                             okMsg: {
                                 enable:true,

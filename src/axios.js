@@ -10,9 +10,11 @@ axios.defaults.baseURL = '/api';
 // http response 拦截器
 axios.interceptors.response.use(
     response => {
+        //console.log(response);
         return response;
     },
     error => {
+        console.log(error);
         if (error.response) {
             switch (error.response.status) {
                 case 401:
@@ -32,9 +34,12 @@ axios.interceptors.response.use(
                     break;
             }
         }
+
         // console.log(JSON.stringify(error));//console : Error: Request failed with status code 402
         /*return Promise.reject(error.response.data)*/
-        return Promise.reject('');
+        var pro=Promise.reject('登录失败！');
+        console.log(pro);
+        return pro;
     });
 
 export default axios;
