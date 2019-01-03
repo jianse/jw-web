@@ -194,6 +194,21 @@
         name: "Teachers",
 
         data() {
+            let validTNO=(rule,value,callback)=>{
+                this.axios({
+                    url:'/teacher/exist',
+                    method:'post',
+                    data:value,
+                }).then((res)=>{
+                    if(res.data.data){
+                        callback(new Error("该教师号已经存在，请检查后再试！"));
+                    }else {
+                        callback();
+                    }
+                }).catch(()=>{
+                    callback(new Error("系统或网络错误！"));
+                })
+            };
             return {
                 newTeaDeptSelection:[],
                 titleOptions:[],

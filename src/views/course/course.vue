@@ -536,12 +536,7 @@
                     });
                     this.refreshTable();
                 }).catch((error)=>{
-                    this.$notify({
-                        title:'取消删除！',
-                        message:'已取消删除',
-                        type:'info',
-                        position: 'bottom-right',
-                    });
+
                 });
             },
             onDeleteClick(){
@@ -673,6 +668,8 @@
                             data:this.openCourseFormData,
                         },(res)=>{
 
+                            this.openCourseDialogVisible=false;
+                            this.fetchCourseData();
                         },{
                             okMsg: {
                                 enable:true,

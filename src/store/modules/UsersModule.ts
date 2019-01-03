@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Element from 'element-ui';
 
 export default {
   namespaced: true,
@@ -54,6 +55,7 @@ export default {
         /*this.$route.router.push({ path: '/base' });*/
       }).catch((error) => {
         /*iView.Message.error('用户名或密码错误！');*/
+        Element.Message.error('用户名或密码错误！');
         context.commit('setSignTrue', null, { root: true});
       });
     },
