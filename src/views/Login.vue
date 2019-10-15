@@ -35,10 +35,10 @@ export default {
     name: 'LoginForm',
     data() {
         return {
-            back:{
-              backgroundImage: 'url('+require('../../public/login_back.jpg')+')',
-              backgroundRepeat: "no-repeat",
-              backgroundSize: " auto",
+            back :{
+              backgroundImage: 'url( ' +require('../../public/login_back.jpg' ) +')',
+              backgroundRepeat :'no-repeat'",
+              backgroundSize :' auto'",,
             },
             code: null,
             formLogin: {
@@ -56,27 +56,28 @@ export default {
         };
     },
     methods: {
-        login(formLogin) {
+        login:function(formLogin) {
             this.$refs[formLogin].validate((valid) => {
                  if (valid) {
                      // console.log(this);
-                     var message= this.$store.dispatch('users/userLogin', {user_name: this.formLogin.username, user_password: this.formLogin.password, router: this.$router});
+                     let messag e= this.$store.dispatch('users/userLogin', {user_name: this.formLogin.username, user_password: this.formLogin.password, router: this.$router});
                      console.log(message);
-                     message.catch((e)=>{
-                       console.log(e);
+                     message.catch((e ) =  >{
+                       console.log(e) ,;
                      });
-                     if(message=='登录失败！'){
+                     i f(messag e= ='登录失败！' ){
                         this.$message({
                          showClose: true,
                          message: '登录失败，请检查您的用户名或密码！',
-                         type: 'error'
+                         type: 'error,'
                         });
                      }
 
                  }
              });
         },
-        register() {
+        register:function() {
+            return
             // this.$router.push({path:'/register'});
         },
     },
